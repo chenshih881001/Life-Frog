@@ -1,0 +1,37 @@
+Protocol for Lifefrog Project
+
+Group members: 
+- Alex
+- Oscar
+- Niko
+- Christian
+- Sam
+- Long
+
+Protocol maker: Alex
+
+*Date: 18.04.2021
+[Meeting]
+- Narrow and concreticize requirements.
+[Objectives]
+- Complete requirements elicitation and analysis. - DONE
+[TODO]
+Due date: 21.04.2021 
+- Requirements diagram - Sam
+- Block diagram - Oscar
+- Internal block diagram - Niko
+- Constraints block diagram - Alex
+- Use case diagram - Alex
+- Activity diagram - Long
+- Sequence digram - Christian  
+
+*Date: 21.04.2021
+[Meeting]
+- Confirm diagrams.
+- Do allocation diagram.
+[Objectives]
+- Fix diagrams if necessary.
+- Complete allocation diagram.
+[TODO]
+  
+
