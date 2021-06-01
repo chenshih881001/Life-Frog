@@ -29,44 +29,130 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 
 // THIS IS THE FUNCTION YOU IMPLEMENT
-int move(char *world) {
-    // YOUR CODE HERE
-    return 1; // REPLACE THE RETURN VALUE WITH YOUR CALCULATED RETURN VALUE
+int move(char *world)
+{
+    //find Target and robot coordinates
+    int tc = 0, rc = 0;
+    int flag[4] = {0, 0, 0, 0};
+
+    while (world[tc] != 'T')
+    {
+        tc++;
+    }
+
+    int tx = tc % 21; //target X coordinate
+    int ty = tc / 21; //target Y coordinate
+    while (world[rc] != 'R')
+    {
+        rc++;
+    }
+    int rx = rc % 21; //robot X coordinate
+    int ry = rc / 21; //robot Y coordinate
+
+    if (world[rc - 21] == '#')
+        flag[0] = 1; //north is obstruccted
+    if (world[rc + 1] == '#')
+        flag[1] = 1; //east is obstruccted
+    if (world[rc + 21] == '#')
+        flag[2] = 1; //south is obstruccted
+    if (world[rc - 1] == '#')
+        flag[3] = 1; //west is obstruccted
+
+    //choose direction
+    if (ty < ry && !flag[0]) //target is to the north and unobstructed
+    {
+        printf("1\n");
+        flag[2] = 1;
+        return 1;
+    }
+    else if (tx > rx && !flag[1]) //target is to the east and unobstructed
+    {
+        printf("2\n");
+        flag[3] = 1;
+        return 2;
+    }
+    else if (ty > ry && !flag[2]) //target is to the south and unobstructed
+    {
+        printf("3\n");
+        flag[0] = 1;
+        return 3;
+    }
+    else if (tx < rx && !flag[3]) //target is to the west and unobstructed
+    {
+        printf("4\n");
+        flag[1] = 1;
+        return 4;
+    }
+    else
+    {
+        if (!flag[0])
+        {
+            printf("1\n");
+            flag[2] = 1;
+            return 1;
+        }
+        if (!flag[1])
+        {
+            printf("2\n");
+            flag[3] = 1;
+            return 2;
+        }
+        if (!flag[2])
+        {
+            printf("3\n");
+            flag[0] = 1;
+            return 3;
+        }
+        if (!flag[3])
+        {
+            printf("4\n");
+            flag[1] = 1;
+            return 4;
+        }
+    }
 }
 
 // Return target index
-int update_world(int movement, char *world, int robot_index, int width) {
+int update_world(int movement, char *world, int robot_index, int width)
+{
     int target_index = 0;
     // NORTH
-    if(movement == 1) {
-        target_index = robot_index-(width+1); // +1 for the newline
+    if (movement == 1)
+    {
+        target_index = robot_index - (width + 1); // +1 for the newline
     }
     // SOUTH
-    else if(movement == 3) {
-        target_index = robot_index+(width+1); // +1 for the newline
+    else if (movement == 3)
+    {
+        target_index = robot_index + (width + 1); // +1 for the newline
     }
     // EAST
-    else if(movement == 2) {
-        target_index = robot_index+1;
+    else if (movement == 2)
+    {
+        target_index = robot_index + 1;
     }
     // WEST
-    else if(movement == 4) {
-        target_index = robot_index-1;
+    else if (movement == 4)
+    {
+        target_index = robot_index - 1;
     }
-    
+
     // ACTION
-    if(world[target_index] == 'O') {
+    if (world[target_index] == 'O')
+    {
         world[target_index] = 'R';
         world[robot_index] = 'O';
         return target_index;
     }
-    else if(world[target_index] == '#') {
+    else if (world[target_index] == '#')
+    {
         printf("%s", world);
         printf("%c", '\n');
         printf("FAILURE, crashed into a wall!");
         exit(1);
     }
-     else if(world[target_index] == 'T') {
+    else if (world[target_index] == 'T')
+    {
         world[target_index] = 'R';
         world[robot_index] = 'O';
         printf("%s", world);
@@ -76,42 +162,207 @@ int update_world(int movement, char *world, int robot_index, int width) {
     }
 }
 
-int main() {
+int main()
+{
     const int MAX_STEPS = 200;
     int step = 1;
-    
+
     int movement;
     int width = 20; // excluding newlines
 
     // The world
     char world[200] = {
-        '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
-        '#','T','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','R','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '\n',
+        '#',
+        'T',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        '#',
+        '\n',
+        '#',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        '#',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        '#',
+        '\n',
+        '#',
+        '#',
+        '#',
+        '#',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        '#',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        '#',
+        '\n',
+        '#',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        '#',
+        '\n',
+        '#',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        '#',
+        '\n',
+        '#',
+        'O',
+        'R',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        '#',
+        '\n',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '#',
+        '\n',
     };
 
     // Initialize target and robot positions
     // Assumes only one target, one robot
-    unsigned int elements = sizeof(world)/sizeof(world[0]);
+    unsigned int elements = sizeof(world) / sizeof(world[0]);
 
     // Initialize the index of the robot and the target.
     // Assumes exactly one robot and one target
     int robot_index;
     int target_index;
 
-    for(int i = 0; i < elements; ++i) {
-    if (world[i] == 'R') {
+    for (int i = 0; i < elements; ++i)
+    {
+        if (world[i] == 'R')
+        {
             robot_index = i;
             break;
         }
     }
-    for(int i = 0; i < elements; ++i) {
-    if (world[i] == 'T') {
+    for (int i = 0; i < elements; ++i)
+    {
+        if (world[i] == 'T')
+        {
             target_index = i;
             break;
         }
@@ -123,18 +374,19 @@ int main() {
     // printf("Robot index: %i / target index: %i %c", robot_index, target_index, '\n');
     printf("%s", world);
     printf("%c", '\n');
-    
-    while(step <= MAX_STEPS) {
+
+    while (step <= MAX_STEPS)
+    {
         printf("After step number %i: %c", step, '\n');
 
         movement = move(world);
         robot_index = update_world(movement, world, robot_index, width);
         printf("%s", world);
         printf("%c", '\n');
-        step = step+1;
+        step = step + 1;
     }
-    if(step >= MAX_STEPS) {
+    if (step >= MAX_STEPS)
+    {
         printf("FAILURE, maximum number of steps exceeded.");
     }
-    
 }
