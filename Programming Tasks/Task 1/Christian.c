@@ -29,7 +29,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <stdbool.h>
 
-char world2[100][100];
+char world2[21][9];
 bool worldiscopied=false, stuck=false;
 int tx, ty, rx, ry, state, xmax=0, ymax=0, moveto, movetoold, rxold = 0, ryold = 0;
 
@@ -178,7 +178,7 @@ int move(char *world) {
             
         case 2:
             printf("State 2\n");
-            int round=0;
+            int round=0, bestdirection[2][4], initialmoveto=moveto;
             do{
                 rx=rxold;
                 ry=ryold;
@@ -208,14 +208,45 @@ int move(char *world) {
                         rx--;
                     }
                 }
+                if(round<2)
+                {
+                    bestdirection[round][1]=moveto;
+                    bestdirection[round][2]=rx;
+                    bestdirection[round][3]=ry;
+                    if((world2[rx][ry]!='#'&&world2[rx][ry]!='F')&&(world2[rx][ry--]=='#'||world2[rx--][ry]=='#'||world2[rx][ry++]=='#'||world2[rx++][ry]=='#'))
+                    {
+                        bestdirection[round][0]=2;
+                    }
+                    else if(world2[rx][ry]!='#'&&world2[rx][ry]!='F')
+                    {
+                        bestdirection[round][0]=1;
+                    }
+                    else
+                    {
+                        bestdirection[round][0]=0;
+                    }
+                }
                 round++;
-            }while((world2[rx][ry]=='#'||world2[rx][ry]=='F')&&round<=2);
-            if(round > 2)
+            }while(round<3);
+            if(bestdirection[0][0]==0&&bestdirection[1][0]==0)
             {
-                state=3;                
+                state=3;
+                moveto=initialmoveto;
             }
             else
             {
+                if(bestdirection[0][0]>bestdirection[1][0])
+                {
+                    moveto=bestdirection[0][1];
+                    rx=bestdirection[0][2];
+                    ry=bestdirection[0][3];
+                }
+                else
+                {
+                    moveto=bestdirection[1][1];
+                    rx=bestdirection[1][2];
+                    ry=bestdirection[1][3];
+                }
                 world2[rxold][ryold]='F';
                 state=0;
                 go=true;
@@ -341,13 +372,13 @@ int main() {
 
     // The world
     char world[200] = {
-       '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
-        '#','T','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','R','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
+        '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
+        '#','T','O','O','O','O','O','O','O','O','O','#','O','O','O','O','R','O','O','#','\n',
+        '#','O','#','#','#','O','O','O','O','O','O','O','#','O','O','O','O','O','O','#','\n',
+        '#','O','#','O','#','O','O','O','O','O','O','O','O','#','O','O','O','O','O','#','\n',
+        '#','#','#','O','O','O','O','#','#','#','O','O','O','#','O','O','O','O','O','#','\n',
+        '#','O','O','O','O','O','#','O','O','O','#','#','#','O','O','O','O','O','O','#','\n',
+        '#','O','O','O','O','O','O','O','#','O','O','O','O','O','O','O','O','O','O','#','\n',
         '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
     };
 
