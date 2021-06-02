@@ -29,11 +29,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 
 // THIS IS THE FUNCTION YOU IMPLEMENT
+//int flag[4] = {0, 0, 0, 0};
+
 int move(char *world)
 {
     //find Target and robot coordinates
     int tc = 0, rc = 0;
-    int flag[4] = {0, 0, 0, 0};
 
     while (world[tc] != 'T')
     {
@@ -49,7 +50,7 @@ int move(char *world)
     int rx = rc % 21; //robot X coordinate
     int ry = rc / 21; //robot Y coordinate
 
-    if (world[rc - 21] == '#')
+    /*if (world[rc - 21] == '#')
         flag[0] = 1; //north is obstruccted
     if (world[rc + 1] == '#')
         flag[1] = 1; //east is obstruccted
@@ -57,33 +58,33 @@ int move(char *world)
         flag[2] = 1; //south is obstruccted
     if (world[rc - 1] == '#')
         flag[3] = 1; //west is obstruccted
-
+*/
     //choose direction
-    if (ty < ry && !flag[0]) //target is to the north and unobstructed
+    if (ty < ry) // && !flag[0]) //target is to the north and unobstructed
     {
         printf("1\n");
-        flag[2] = 1;
+        //flag[2] = 1;
         return 1;
     }
-    else if (tx > rx && !flag[1]) //target is to the east and unobstructed
+    else if (tx > rx) // && !flag[1]) //target is to the east and unobstructed
     {
         printf("2\n");
-        flag[3] = 1;
+        //flag[3] = 1;
         return 2;
     }
-    else if (ty > ry && !flag[2]) //target is to the south and unobstructed
+    else if (ty > ry) // && !flag[2]) //target is to the south and unobstructed
     {
         printf("3\n");
-        flag[0] = 1;
+        //flag[0] = 1;
         return 3;
     }
-    else if (tx < rx && !flag[3]) //target is to the west and unobstructed
+    else if (tx < rx) // && !flag[3]) //target is to the west and unobstructed
     {
         printf("4\n");
-        flag[1] = 1;
+        //flag[1] = 1;
         return 4;
     }
-    else
+    /*else
     {
         if (!flag[0])
         {
@@ -109,7 +110,7 @@ int move(char *world)
             flag[1] = 1;
             return 4;
         }
-    }
+    }*/
 }
 
 // Return target index
@@ -221,7 +222,7 @@ int main()
         'O',
         'O',
         'O',
-        '#',
+        'O',
         'O',
         'O',
         'O',
@@ -236,9 +237,6 @@ int main()
         '#',
         '\n',
         '#',
-        '#',
-        '#',
-        '#',
         'O',
         'O',
         'O',
@@ -248,7 +246,10 @@ int main()
         'O',
         'O',
         'O',
-        '#',
+        'O',
+        'O',
+        'O',
+        'O',
         'O',
         'O',
         'O',
