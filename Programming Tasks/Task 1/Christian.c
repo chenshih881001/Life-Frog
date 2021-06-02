@@ -31,7 +31,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 char world2[21][9];
 bool worldiscopied=false, stuck=false;
-int tx, ty, rx, ry, state, xmax=0, ymax=0, moveto, movetoold, rxold = 0, ryold = 0;
+int tx, ty, rx, ry, state, xmax=0, ymax=0, moveto, movetoold, rxold = 0, ryold = 0,lastopposidemoveto=0, failcounter=0;
 
 // THIS IS THE FUNCTION YOU IMPLEMENT
 int move(char *world) {
@@ -56,9 +56,9 @@ int move(char *world) {
             counter++;
         }while(counter<200);
         //printf("copy world with dimensions of x=%i and y=%i\n",xmax,ymax);
-        /*for(int i = 0; i<=ymax; i++)
+        /*for(int i = 0; i<=8; i++)
         {
-            for(int j = 0; j<=xmax; j++)
+            for(int j = 0; j<=20; j++)
             {
                 printf("%c", world2[j][i]);
             }
@@ -275,9 +275,9 @@ int move(char *world) {
                 {
                     movetoold=moveto;
                 }
-                rx=rxold;
-                ry=ryold;
             }
+            rx=rxold;
+            ry=ryold;
             
             switch(movetoold){
                 case 1:
@@ -293,7 +293,8 @@ int move(char *world) {
                     rx--;
                     break;
             }
-            if(world2[rx][ry]=='#')
+            //printf("lastopposidemoveto %i, movetoold %i, place %c\n", lastopposidemoveto, movetoold, world2[rx][ry]);
+            if(world2[rx][ry]=='#'||(lastopposidemoveto==movetoold&&failcounter<4))
             {
                 rx=rxold;
                 ry=ryold;
@@ -305,13 +306,30 @@ int move(char *world) {
                 {
                     movetoold--;
                 }
+                failcounter++;
             }
             else
             {
+                switch(movetoold){
+                case 1:
+                    lastopposidemoveto=3;
+                    break;
+                case 2:
+                    lastopposidemoveto=4;
+                    break;
+                case 3:
+                    lastopposidemoveto=1;
+                    break;
+                case 4:
+                    lastopposidemoveto=2;
+                    break;
+                }
+            
                 world2[rxold][ryold]='F';
                 state=0;
                 go=true;
                 moveto=movetoold;
+                failcounter=0;
             }
             break;
     }
@@ -372,13 +390,13 @@ int main() {
 
     // The world
     char world[200] = {
-        '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
-        '#','T','O','O','O','O','O','O','O','O','O','#','O','O','O','O','R','O','O','#','\n',
-        '#','O','#','#','#','O','O','O','O','O','O','O','#','O','O','O','O','O','O','#','\n',
-        '#','O','#','O','#','O','O','O','O','O','O','O','O','#','O','O','O','O','O','#','\n',
-        '#','#','#','O','O','O','O','#','#','#','O','O','O','#','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','#','O','O','O','#','#','#','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','#','O','O','O','O','O','O','O','O','O','O','#','\n',
+       '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
+        '#','T','O','O','O','O','O','O','O','O','O','#','O','O','O','O','O','O','O','#','\n',
+        '#','O','O','#','#','#','#','#','#','#','O','#','O','O','O','O','O','O','O','#','\n',
+        '#','#','#','#','O','O','O','O','O','O','O','#','O','O','O','O','O','O','O','#','\n',
+        '#','O','O','O','O','#','O','#','#','#','#','#','O','O','O','O','O','O','O','#','\n',
+        '#','#','#','#','#','#','O','#','O','O','O','O','O','O','O','O','O','O','O','#','\n',
+        '#','O','R','O','O','O','O','#','O','O','O','O','O','O','O','O','O','O','O','#','\n',
         '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
     };
 
