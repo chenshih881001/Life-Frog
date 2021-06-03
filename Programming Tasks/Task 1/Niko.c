@@ -34,8 +34,8 @@ int move(char *world, int robot_index, int target_index, int width) {
     int run;
     int yr = robot_index / (width+1);
     int xr = robot_index % (width+1);
-    int yt = target_index / (width+1) ;
-    int xt = target_index % (width+1) ;
+    int yt = target_index / (width+1);
+    int xt = target_index % (width+1);
  
     if (yr > yt)                           
     {    
@@ -58,10 +58,6 @@ int move(char *world, int robot_index, int target_index, int width) {
     }
 
     printf("Direction: %i\n", run);
-    /*printf("yr %i\n", yr);
-    printf("xr %i\n", xr);
-    printf("yt %i\n", yt);
-    printf("xt %i\n", xt);*/
     return run; // REPLACE THE RETURN VALUE WITH YOUR CALCULATED RETURN VALUE
 }
 
