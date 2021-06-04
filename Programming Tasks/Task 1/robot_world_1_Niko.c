@@ -32,27 +32,27 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int move(char *world, int robot_index, int target_index, int width) {
     // YOUR CODE HERE
     int run;
-    int yr = robot_index / (width+1);
-    int xr = robot_index % (width+1);
-    int yt = target_index / (width+1);
-    int xt = target_index % (width+1);
+    int yr = robot_index / (width+1);   // y coordinate of the robot
+    int xr = robot_index % (width+1);   // x coordinate ""
+    int yt = target_index / (width+1);  // y coordinate of the target
+    int xt = target_index % (width+1);  // x coordinate ""
  
-    if (yr > yt)                           
+    if (yr > yt)      // if robot is below the target                        
     {    
         run = 1; //north
     }
     
-    else if (yr < yt)
+    else if (yr < yt) // if robot is aboth the target
     {
         run = 3; //south
     }
 
-    else if (xr > xt)
+    else if (xr > xt) // if remainder of xr is bigger then the target is left to the robot
     {
         run = 4; //west
     }
 
-    else if (xr < xt)                 
+    else if (xr < xt) // if remainder of xr is smaller then the target is right to the robot              
     {
         run = 2; //east
     }
