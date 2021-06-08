@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 char world2[21][9];
+char waterland[21][9];
 bool worldiscopied=false, stuck=false, driveLand=true;
 int tx, ty, rx, ry, state, xmax=0, ymax=0, moveto, movetoold, rxold = 0, ryold = 0,lastopposidemoveto=0, failcounter=0;
 
@@ -22,6 +23,7 @@ int move(char *world) {
             if(world[counter]!='\n')
             {
                 world2[x][y]=world[counter];
+                waterland[x][y]=world[counter];
                 if(x>xmax){xmax=x;}
                 x++;
             }
@@ -311,23 +313,24 @@ int move(char *world) {
             }
             break;
     }
-    
-    if(driveLand==true&&world2[rx][ry]=='~')
+    }while(!go);
+    printf("Watermap: %c", waterland[rx][ry]);
+    if(driveLand==true&&waterland[rx][ry]=='~')
     {
+        printf(" True make it false\n");
         driveLand=false;
         moveto=5;
         rx=rxold;
         ry=ryold;
     }
-    else if(driveLand==false&&world2[rx][ry]!='~'&&world2[rx][ry]!='#')
+    else if(driveLand==false&&waterland[rx][ry]!='~'&&waterland[rx][ry]!='#')
     {
+        printf(" False make it true\n");
         driveLand=true;
         moveto=5;
         rx=rxold;
         ry=ryold;
     }
-    
-    }while(!go);
     go=false;
     printf("Direction %i\n", moveto);
     return moveto;
