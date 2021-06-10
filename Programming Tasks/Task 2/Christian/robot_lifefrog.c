@@ -314,10 +314,8 @@ int move(char *world) {
             break;
     }
     }while(!go);
-    printf("Watermap: %c", waterland[rx][ry]);
     if(driveLand==true&&waterland[rx][ry]=='~')
     {
-        printf(" True make it false\n");
         driveLand=false;
         moveto=5;
         rx=rxold;
@@ -325,7 +323,6 @@ int move(char *world) {
     }
     else if(driveLand==false&&waterland[rx][ry]!='~'&&waterland[rx][ry]!='#')
     {
-        printf(" False make it true\n");
         driveLand=true;
         moveto=5;
         rx=rxold;
