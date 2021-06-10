@@ -50,7 +50,7 @@ int move(char *world)
     int rx = rc % 21; //robot X coordinate
     int ry = rc / 21; //robot Y coordinate
 
-    /*if (world[rc - 21] == '#')
+/*  if (world[rc - 21] == '#')
         flag[0] = 1; //north is obstruccted
     if (world[rc + 1] == '#')
         flag[1] = 1; //east is obstruccted
