@@ -17,6 +17,8 @@ int Yorigin = Ymax/2;
 char map[Ymax][Xmax];
 
 int col = 0, xmax = 0, ymax = 0, robotIndex=0; //For world
+int north, east, south, west;
+int originPoint=0, initRobot=0; //For Initial Robot Location
 
 int XCurrent = Xorigin;
 int YCurrent = Yorigin;
@@ -78,6 +80,17 @@ void robotPosition()
   }
 }
 
+void FillMap(){
+  //Position on the map
+  int xindex=Xorigin+((robotIndex%xmax)-(originPoint%xmax));
+  int yindex=Yorigin+((robotIndex/xmax)-(originPoint/xmax));
+  map[yindex][xindex]='F'; //F = footprint
+  map[yindex-1][xindex]=(map[yindex-1][xindex]!='F') ? north : 'F'; //short if statement (if its not already F then copy from sur[])
+  map[yindex][xindex+1]=(map[yindex][xindex+1]!='F') ? east : 'F';
+  map[yindex+1][xindex]=(map[yindex+1][xindex]!='F') ? south : 'F';
+  map[yindex][xindex-1]=(map[yindex][xindex-1]!='F') ? west : 'F';
+}
+
 int move(char *world) {
     InitializeMap();
 
@@ -86,11 +99,21 @@ int move(char *world) {
 
     //Find Robot location
     robotPosition();
+    
+    if(!initRobot){   //Gets initial robot index
+      originPoint=robotIndex;
+      initRobot++;
+    }
 
     //Scan Surroundings
-    char sur[4]={world[rl-xmax], world[rl+1], world[rl+xmax], world[rl-1]}; //sur={north, east, south, west}
+    north=world[robotIndex-xmax];
+    east=world[robotIndex+1];
+    south=world[robotIndex+xmax];
+    west=world[robotIndex-1];
+    char sur[4]={north, east, south, west};
 
-
+    //Fill in the map with surroundings
+    FillMap();
 
     PrintMap();
     return mvDir;
