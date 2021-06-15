@@ -82,13 +82,13 @@ void robotPosition()
 
 void FillMap(){
   //Position on the map
-  int xindex=Xorigin+((robotIndex%xmax)-(originPoint%xmax));
-  int yindex=Yorigin+((robotIndex/xmax)-(originPoint/xmax));
-  map[yindex][xindex]='F'; //F = footprint
-  map[yindex-1][xindex]=(map[yindex-1][xindex]!='F') ? north : 'F'; //short if statement (if its not already F then copy from sur[])
-  map[yindex][xindex+1]=(map[yindex][xindex+1]!='F') ? east : 'F';
-  map[yindex+1][xindex]=(map[yindex+1][xindex]!='F') ? south : 'F';
-  map[yindex][xindex-1]=(map[yindex][xindex-1]!='F') ? west : 'F';
+  //int xindex=Xorigin+((robotIndex%xmax)-(originPoint%xmax));
+  //int yindex=Yorigin+((robotIndex/xmax)-(originPoint/xmax));
+  map[YCurrent][XCurrent]='F'; //F = footprint    W = water footprint
+  map[YCurrent-1][XCurrent]=(map[YCurrent-1][XCurrent]!='F') ? north : 'F'; //short if statement (if its not already F then copy from sur[])
+  map[YCurrent][XCurrent+1]=(map[YCurrent][XCurrent+1]!='F') ? east : 'F';
+  map[YCurrent+1][XCurrent]=(map[YCurrent+1][XCurrent]!='F') ? south : 'F';
+  map[YCurrent][XCurrent-1]=(map[YCurrent][XCurrent-1]!='F') ? west : 'F';
 }
 
 int move(char *world) {
