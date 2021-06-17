@@ -120,7 +120,7 @@ void robotPosition(char *world)
   }
 }
 
-void FillMap(){
+void FillMap(char *world){
   //Position on the map
   if( Ycurrent==Yorigin && Xcurrent==Xorigin){
 	  map[Ycurrent][Xcurrent]='X';
@@ -453,10 +453,6 @@ int move(char *world) {
     //Find Robot location
     robotPosition(world);
 
-    if(!initRobot){   //Gets initial robot index??????????? (Explain why please)
-      originPoint=robotIndex;
-      initRobot++;
-    }
 
 		sur[0] = world[robotIndex - columns]; //copy north
 		sur[1] = world[robotIndex + 1];			//copy east
