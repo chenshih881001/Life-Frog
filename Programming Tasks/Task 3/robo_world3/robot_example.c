@@ -120,15 +120,36 @@ void robotPosition(char *world)
   }
 }
 
-void FillMap(char *world){
+void FillMap(){
   //Position on the map
-  //int xindex=Xorigin+((robotIndex%xmax)-(originPoint%xmax));
-  //int yindex=Yorigin+((robotIndex/xmax)-(originPoint/xmax));
-  map[Ycurrent][Xcurrent]='F'; //F = footprint    W = water footprint
-  map[Ycurrent-1][Xcurrent]=(map[Ycurrent-1][Xcurrent]!='F') ? sur[0] : 'F'; //short if statement (if its not already F then copy from sur[])
-  map[Ycurrent][Xcurrent+1]=(map[Ycurrent][Xcurrent+1]!='F') ? sur[1] : 'F';
-  map[Ycurrent+1][Xcurrent]=(map[Ycurrent+1][Xcurrent]!='F') ? sur[2] : 'F';
-  map[Ycurrent][Xcurrent-1]=(map[Ycurrent][Xcurrent-1]!='F') ? sur[3] : 'F';
+  if( Ycurrent==Yorigin && Xcurrent==Xorigin){
+	  map[Ycurrent][Xcurrent]='X';
+  }
+  else if(map[Ycurrent][Xcurrent]!='X'){
+	  map[Ycurrent][Xcurrent]='R';
+  }
+
+  if(driveMode==land){
+	  map[Yold][Xold]='F';
+  }
+  else if(driveMode==water){
+	   map[Yold][Xold]='W';
+  }
+  
+  if(map[Ycurrent-1][Xcurrent]!='F' || map[Ycurrent-1][Xcurrent]!='W'){
+	  map[Ycurrent-1][Xcurrent]= sur[0];
+  }
+  else if(map[Ycurrent][Xcurrent+1]!='F' || map[Ycurrent][Xcurrent+1]!='W'){
+	  map[Ycurrent][Xcurrent+1]= sur[1];
+  }
+  else if(map[Ycurrent+1][Xcurrent]!='F' || map[Ycurrent+1][Xcurrent]!='W'){
+	  map[Ycurrent+1][Xcurrent]= sur[2];
+  }
+  else if(map[Ycurrent][Xcurrent-1]!='F' || map[Ycurrent][Xcurrent-1]!='W'){
+	  map[Ycurrent][Xcurrent-1]= sur[3];
+  }
+
+  
 }
 
 void targeted_move()
