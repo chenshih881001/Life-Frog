@@ -136,16 +136,16 @@ void FillMap(){
 	   map[Yold][Xold]='W';
   }
   
-  if(map[Ycurrent-1][Xcurrent]!='F' || map[Ycurrent-1][Xcurrent]!='W'){
+  if(map[Ycurrent-1][Xcurrent]!='F' || map[Ycurrent-1][Xcurrent]!='W'|| map[Ycurrent-1][Xcurrent]!='X'){
 	  map[Ycurrent-1][Xcurrent]= sur[0];
   }
-  else if(map[Ycurrent][Xcurrent+1]!='F' || map[Ycurrent][Xcurrent+1]!='W'){
+  else if(map[Ycurrent][Xcurrent+1]!='F' || map[Ycurrent][Xcurrent+1]!='W' || map[Ycurrent-1][Xcurrent]!='X'){
 	  map[Ycurrent][Xcurrent+1]= sur[1];
   }
-  else if(map[Ycurrent+1][Xcurrent]!='F' || map[Ycurrent+1][Xcurrent]!='W'){
+  else if(map[Ycurrent+1][Xcurrent]!='F' || map[Ycurrent+1][Xcurrent]!='W' || map[Ycurrent-1][Xcurrent]!='X'){
 	  map[Ycurrent+1][Xcurrent]= sur[2];
   }
-  else if(map[Ycurrent][Xcurrent-1]!='F' || map[Ycurrent][Xcurrent-1]!='W'){
+  else if(map[Ycurrent][Xcurrent-1]!='F' || map[Ycurrent][Xcurrent-1]!='W' || map[Ycurrent-1][Xcurrent]!='X'){
 	  map[Ycurrent][Xcurrent-1]= sur[3];
   }
 
