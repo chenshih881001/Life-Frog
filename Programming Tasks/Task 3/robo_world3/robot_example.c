@@ -51,7 +51,7 @@ int Xold, Yold;
 int Xtarget = Xmax/2, Ytarget = Ymax/2; //Variable for target direction
 
 int driveMode = land;
-int target_located = 0, spot_located = 0, loop_break1 = 0, loop_break2 = 0;
+int target_located = 0, spot_located = 0, loop_break1 = 0, loop_break2 = 0, footprint_cleared = 0;
 
 int state = 0;
 int direction = south;
@@ -158,10 +158,17 @@ void targeted_move()
 			for(int i = 0; i<Xmax; i++)
 			{
 				for(int j = 0; j<Ymax; j++)
-					world2[i][j] = map[j][i];		// the orientation is flipped for Christian's code lmao
+				{
+					if(map[j][i]=='W')
+						world2[i][j] = 'F';
+					else
+						world2[i][j] = map[j][i];		// the orientation is flipped for Christian's code lmao
+				}
 			}
 
 			memcpy(waterland, world2, sizeof(world2));
+
+
 			printf("\n");
 			if(!target_located)
 			{
@@ -637,6 +644,24 @@ int move(char *world) {
 
 		else
 		{
+
+			if(!footprint_cleared)
+			{
+				//Clearing the map of footprint
+				for(int i = 0; i<Ymax; i++)
+				{
+					for(int j = 0; j<Xmax; j++)
+					{
+						if(map[i][j]=='F')
+							map[i][j] = 'O';
+						else if(map[i][j]=='W')
+							map[i][j] = '~';
+					}
+				}
+				footprint_cleared = TRUE;
+			}
+
+
 			printf("I'm returning to base!\n");
 			if(map[Ycurrent-1][Xcurrent] == 'X')        //check north
 					{
