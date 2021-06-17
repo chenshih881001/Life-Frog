@@ -135,7 +135,7 @@ void FillMap(char *world){
   else if(driveMode==water){
 	   map[Yold][Xold]='W';
   }
-  
+
   if(map[Ycurrent-1][Xcurrent]!='F' || map[Ycurrent-1][Xcurrent]!='W'|| map[Ycurrent-1][Xcurrent]!='X'){
 	  map[Ycurrent-1][Xcurrent]= sur[0];
   }
@@ -149,7 +149,7 @@ void FillMap(char *world){
 	  map[Ycurrent][Xcurrent-1]= sur[3];
   }
 
-  
+
 }
 
 void targeted_move()
@@ -173,8 +173,8 @@ void targeted_move()
 			}
 			else
 			{
-				tx = Xorigin;
-				ty = Yorigin;
+				tx = Yorigin;
+				ty = Xorigin;
 			}
 			rx = Xcurrent;
 			ry = Ycurrent;

@@ -32,7 +32,7 @@
 #define FALSE 0
 #define TRUE 1
 
-int mvDir; 						// Final return variable
+int mvDir = 0; 						// Final return variable
 int initMap = 0;
 
 int Xorigin = Xmax/2; // The starting position of the robot
@@ -122,34 +122,31 @@ void robotPosition(char *world)
 
 void FillMap(char *world){
   //Position on the map
-  if( Ycurrent==Yorigin && Xcurrent==Xorigin){
+  if(Ycurrent==Yorigin && Xcurrent==Xorigin)
 	  map[Ycurrent][Xcurrent]='X';
+
+	if(mvDir)
+	{
+		if(driveMode == land && mvDir != modeSwitch && map[Ycurrent][Xcurrent]!='X')
+			map[Ycurrent][Xcurrent]='F';
+		else if(driveMode == water && mvDir != modeSwitch && map[Ycurrent][Xcurrent]!='X')
+			map[Ycurrent][Xcurrent]='W';
+	}
+
+  if(map[Ycurrent-1][Xcurrent]!='F' && map[Ycurrent-1][Xcurrent]!='W'&& map[Ycurrent-1][Xcurrent]!='X'){
+	  map[Ycurrent-1][Xcurrent] = sur[0];
   }
-  else if(map[Ycurrent][Xcurrent]!='X'){
-	  map[Ycurrent][Xcurrent]='R';
+  if(map[Ycurrent][Xcurrent+1]!='F' && map[Ycurrent][Xcurrent+1]!='W' && map[Ycurrent-1][Xcurrent]!='X'){
+	  map[Ycurrent][Xcurrent+1] = sur[1];
+  }
+  if(map[Ycurrent+1][Xcurrent]!='F' && map[Ycurrent+1][Xcurrent]!='W' && map[Ycurrent-1][Xcurrent]!='X'){
+	  map[Ycurrent+1][Xcurrent] = sur[2];
+  }
+  if(map[Ycurrent][Xcurrent-1]!='F' && map[Ycurrent][Xcurrent-1]!='W' && map[Ycurrent-1][Xcurrent]!='X'){
+	  map[Ycurrent][Xcurrent-1] = sur[3];
   }
 
-  if(driveMode==land){
-	  map[Yold][Xold]='F';
-  }
-  else if(driveMode==water){
-	   map[Yold][Xold]='W';
-  }
-  
-  if(map[Ycurrent-1][Xcurrent]!='F' || map[Ycurrent-1][Xcurrent]!='W'|| map[Ycurrent-1][Xcurrent]!='X'){
-	  map[Ycurrent-1][Xcurrent]= sur[0];
-  }
-  else if(map[Ycurrent][Xcurrent+1]!='F' || map[Ycurrent][Xcurrent+1]!='W' || map[Ycurrent-1][Xcurrent]!='X'){
-	  map[Ycurrent][Xcurrent+1]= sur[1];
-  }
-  else if(map[Ycurrent+1][Xcurrent]!='F' || map[Ycurrent+1][Xcurrent]!='W' || map[Ycurrent-1][Xcurrent]!='X'){
-	  map[Ycurrent+1][Xcurrent]= sur[2];
-  }
-  else if(map[Ycurrent][Xcurrent-1]!='F' || map[Ycurrent][Xcurrent-1]!='W' || map[Ycurrent-1][Xcurrent]!='X'){
-	  map[Ycurrent][Xcurrent-1]= sur[3];
-  }
 
-  
 }
 
 void targeted_move()
@@ -173,8 +170,8 @@ void targeted_move()
 			}
 			else
 			{
-				tx = Xorigin;
-				ty = Yorigin;
+				tx = xx;
+				ty = xy;
 			}
 			rx = Xcurrent;
 			ry = Ycurrent;
@@ -482,6 +479,7 @@ int move(char *world) {
 								mvDir = north; //go to north
 								target_located = TRUE;
 								loop_break1 = TRUE;
+								Ytarget = Ycurrent - 1;
 								break;
 							}
 		  		else if(map[Ycurrent][Xcurrent+1] == 'T')   //check east
@@ -490,6 +488,7 @@ int move(char *world) {
 								mvDir = east; //go to east
 								target_located = TRUE;
 								loop_break1 = TRUE;
+								Xtarget = Xcurrent + 1;
 								break;
 							}
 		  		else if(map[Ycurrent+1][Xcurrent] == 'T')	  //check south
@@ -498,6 +497,7 @@ int move(char *world) {
 								mvDir = south;//go to south
 								target_located = TRUE;
 								loop_break1 = TRUE;
+								Ytarget = Ycurrent + 1;
 								break;
 							}
 		  		else if(map[Ycurrent][Xcurrent-1] == 'T')		//check west
@@ -506,6 +506,7 @@ int move(char *world) {
 								mvDir = west; //go to west
 								target_located = TRUE;
 								loop_break1 = TRUE;
+								Xtarget = Xcurrent - 1;
 								break;
 							}
 		  		else
@@ -637,6 +638,27 @@ int move(char *world) {
 		else
 		{
 			printf("I'm returning to base!\n");
+			if(map[Ycurrent-1][Xcurrent] == 'X')        //check north
+					{
+						printf("Base found, going North!\n");
+						mvDir = north; //go to north
+					}
+			else if(map[Ycurrent][Xcurrent+1] == 'X')   //check east
+					{
+						printf("Base found, going East!\n");
+						mvDir = east; //go to east
+					}
+			else if(map[Ycurrent+1][Xcurrent] == 'X')	  //check south
+					{
+						printf("Base found, going South!\n");
+						mvDir = south;//go to south
+					}
+			else if(map[Ycurrent][Xcurrent-1] == 'X')		//check west
+					{
+						printf("Base found, going West!\n");
+						mvDir = west; //go to west
+					}
+			else
 			targeted_move();
 		}
 
