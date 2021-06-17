@@ -31,9 +31,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "robot_example.h"
 
 int driving_mode = 0;
-int rescued = 0;
-int energy = 0;
-char coming_from = 'X'; // We start on the space we need to return to
+char coming_from = 'O'; // we always start on an empty space
 
 // THIS IS THE FUNCTION YOU IMPLEMENT
 int move(char *world);
@@ -43,37 +41,31 @@ int update_world(int movement, char *world, int robot_index, int width) {
     int target_index = 0;
     // NORTH
     if(movement == 1) {
-        energy += 10;
         target_index = robot_index-(width+1); // +1 for the newline
     }
     // SOUTH
     else if(movement == 3) {
-        energy += 10;
         target_index = robot_index+(width+1); // +1 for the newline
     }
     // EAST
     else if(movement == 2) {
-        energy += 10;
         target_index = robot_index+1;
     }
     // WEST
     else if(movement == 4) {
-        energy += 10;
         target_index = robot_index-1;
     }
     else if(movement == 5) {
-        energy += 30;
         printf("Toggling mode!\n");
         target_index = robot_index;
         if(driving_mode == 0) { driving_mode = 1; }
         else { driving_mode = 0; }
     }
-    printf("Energy used so far: %d \n", energy);
 
     // ACTION
     if(world[target_index] == 'O') {
         if(driving_mode != 0) {
-            printf("FAILURE, tried to drive on land in water mode!");
+            printf("FAILURE, tried to drive on land in land water!");
             exit(1);
         }
         else {
@@ -87,18 +79,10 @@ int update_world(int movement, char *world, int robot_index, int width) {
     else if(world[target_index] == 'R') {
         return target_index;
     }
-    // Walls
     else if(world[target_index] == '#') {
         printf("%s", world);
         printf("%c", '\n');
         printf("FAILURE, crashed into a wall!");
-        exit(1);
-    }
-    // Obstacles (can be destroyed later)
-    else if(world[target_index] == '*') {
-        printf("%s", world);
-        printf("%c", '\n');
-        printf("FAILURE, crashed into an obstacle!");
         exit(1);
     }
     else if(world[target_index] == '~') {
@@ -107,6 +91,7 @@ int update_world(int movement, char *world, int robot_index, int width) {
             exit(1);
         }
         else {
+            // TODO handle coming from water
             world[target_index] = 'R';
             world[robot_index] = coming_from;
             coming_from = '~';
@@ -116,24 +101,11 @@ int update_world(int movement, char *world, int robot_index, int width) {
     }
      else if(world[target_index] == 'T') {
         world[target_index] = 'R';
-        world[robot_index] = coming_from;
-        rescued++;
-        coming_from = 'O'; // Targets are alwas considered to be on 'O' spaces
-        return target_index;
-    }
-    else if(world[target_index] == 'X') {
-        world[target_index] = 'R';
-        world[robot_index] = coming_from;
-        if(rescued > 0) {
-            printf("%s", world);
-            printf("%c", '\n');
-            printf("SUCCESS, target returned home!");
-            exit(0);
-        } else {
-            coming_from = 'X';
-            return target_index;
-        }
-
+        world[robot_index] = 'O';
+        printf("%s", world);
+        printf("%c", '\n');
+        printf("SUCCESS, target found!");
+        exit(0);
     }
 }
 
@@ -147,12 +119,12 @@ int main() {
     // The maps
     char world1[200] = {
         '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
-        '#','O','T','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
+        '#','T','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
+        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
+        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
         '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
         '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
         '#','O','R','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','O','#','\n',
         '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n'
     };
 
@@ -213,29 +185,18 @@ int main() {
 
     char world7[200] = {
         '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
-        '#','O','O','~','O','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','R','O','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','~','~','~','~','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','~','T','~','~','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','~','O','~','O','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','O','O','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n'
-    };
-
-    char world8[200] = {
+        '#','T','O','O','~','~','O','O','O','O','O','#','O','O','O','O','R','O','O','#','\n',
+        '#','O','#','#','#','~','~','O','O','O','O','O','#','O','O','O','O','O','O','#','\n',
+        '#','O','#','~','#','~','~','O','O','O','O','O','O','#','O','O','O','O','O','#','\n',
+        '#','#','#','O','O','O','O','#','#','#','O','O','O','#','O','O','O','O','O','#','\n',
+        '#','O','O','O','O','O','#','O','~','O','#','#','#','O','O','O','O','O','O','#','\n',
+        '#','O','O','O','O','O','O','O','#','O','O','O','O','O','O','O','O','O','O','#','\n',
         '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n',
-        '#','O','O','~','O','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','R','O','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','*','*','*','*','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','T','~','~','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','O','~','O','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','O','#','O','O','O','O','O','~','O','O','O','O','O','O','O','O','O','O','#','\n',
-        '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','\n'
     };
 
     // Set the world to use
     char world[200];
-    memcpy(world, world8, sizeof(world8));
+    memcpy(world, world5, sizeof(world5));
 
     // Initialize target and robot positions
     // Assumes only one target, one robot

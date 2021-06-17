@@ -66,7 +66,7 @@ int move(char *world) {
         }
         printf("Robot: x=%i, y=%i;      Target: x=%i, y=%i;\n",rx,ry,tx,ty);
     }
-    
+
     if(waterland[rx][ry]=='T') //Are we finally there? I'm hungry and I need to pee!
     {
         tx=xx; //The new target is our home!
@@ -80,7 +80,7 @@ int move(char *world) {
             }
         }
     }
-    
+
     rxold=rx;
     ryold=ry;
     do{
@@ -127,7 +127,7 @@ int move(char *world) {
                 stuck=false;
             }
             break;
-            
+
         case 1:
             printf("State 1\n");
             if(moveto==2||moveto==4) // Try other direction that leads to T
@@ -170,7 +170,7 @@ int move(char *world) {
                 stuck=false;
             }
             break;
-            
+
         case 2:
             printf("State 2\n");
             int round=0, bestdirection[2][4], initialmoveto=moveto;
@@ -248,7 +248,7 @@ int move(char *world) {
                 stuck=false;
             }
             break;
-            
+
         case 3:
             printf("State 3\n");
             if(!stuck)
@@ -273,7 +273,7 @@ int move(char *world) {
             }
             rx=rxold;
             ry=ryold;
-            
+
             switch(movetoold){
                 case 1:
                     ry--;
@@ -319,7 +319,7 @@ int move(char *world) {
                     lastopposidemoveto=2;
                     break;
                 }
-            
+
                 world2[rxold][ryold]='F';
                 state=0;
                 go=true;

@@ -46,8 +46,6 @@ int originPoint=0, initRobot=0; //For Initial Robot Location
 int Xcurrent = Xmax/2; //Variable for current position of the robot
 int Ycurrent = Ymax/2;
 
-int Xold, Yold;
-
 int Xtarget = Xmax/2, Ytarget = Ymax/2; //Variable for target direction
 
 int driveMode = land;
@@ -145,16 +143,8 @@ void targeted_move()
 
 			memcpy(waterland, world2, sizeof(world2));
 			printf("\n");
-			if(!target_located)
-			{
-				tx = Xtarget;
-				ty = Ytarget;
-			}
-			else
-			{
-				tx = Xorigin;
-				ty = Yorigin;
-			}
+			tx = Xtarget;
+			ty = Ytarget;
 			rx = Xcurrent;
 			ry = Ycurrent;
 			xx = Xorigin;
@@ -416,6 +406,7 @@ void targeted_move()
 		go=false;
 		printf("Direction %d\n", moveto);
 		mvDir = moveto;
+		printf("I am here, ready to exit\n!", moveto);
 		return;
 }
 
@@ -447,180 +438,171 @@ int move(char *world) {
 
 		PrintMap();
 
-		if(!target_located)
-		{
-			// start of the actual movement code
-			state = check_target; 	//reset the state
-			loop_break1 = FALSE;		//reset the loopbreaker
+		// start of the actual movement code
+		state = check_target; 	//reset the state
+		loop_break1 = FALSE;		//reset the loopbreaker
 
-			while(!loop_break1)
+		while(!loop_break1)
+		{
+			switch(state)
 			{
-				switch(state)
-				{
-				case check_target: //If literally adjacent to the target
-					printf("Looking for target!\n");
-					if(map[Ycurrent-1][Xcurrent] == 'T')        //check north
-		  				{
-								printf("Target found, going North!\n");
-								mvDir = north; //go to north
-								target_located = TRUE;
-								loop_break1 = TRUE;
-								break;
-							}
-		  		else if(map[Ycurrent][Xcurrent+1] == 'T')   //check east
-		    		  {
-								printf("Target found, going East!\n");
-								mvDir = east; //go to east
-								target_located = TRUE;
-								loop_break1 = TRUE;
-								break;
-							}
-		  		else if(map[Ycurrent+1][Xcurrent] == 'T')	  //check south
-		    		  {
-								printf("Target found, going South!\n");
-								mvDir = south;//go to south
-								target_located = TRUE;
-								loop_break1 = TRUE;
-								break;
-							}
-		  		else if(map[Ycurrent][Xcurrent-1] == 'T')		//check west
-							{
-								printf("Target found, going West!\n");
-								mvDir = west; //go to west
-								target_located = TRUE;
-								loop_break1 = TRUE;
-								break;
-							}
-		  		else
-		    		state = prioritization_method;
-
-
-				case prioritization_method: 			// Quickest way to go to a blank spot
-					printf("Target is not found! Trying to explore and find the target!\n");
-					loop_break2 = FALSE;
-					direction = south;
-		 			while (!loop_break2)
-					{
-						switch(direction)
-			 			{
-						case south:
-								if(map[Ycurrent+1][Xcurrent] == 'O' && map[Ycurrent+2][Xcurrent] == '_' || map[Ycurrent+1][Xcurrent] == '~' && map[Ycurrent+2][Xcurrent] == '_') // Go south if the spot after that is unknown
-			  				{
-									mvDir=south;					//move direction south
-			         	  Ytarget = Ycurrent + 1; //change the target coordinates for checking
-									loop_break1 = TRUE; // Break the loops
-									loop_break2 = TRUE;
-									printf("I'm going towards (%d, %d)!\n", Xtarget, Ytarget);
-								}
-			  				else
-			        		direction = west;
-			        	break;
-
-			    	case west:
-			 				if(map[Ycurrent][Xcurrent-1] == 'O' && map[Ycurrent][Xcurrent-2] == '_' || map[Ycurrent][Xcurrent-1] == '~' && map[Ycurrent][Xcurrent-2] == '_') // Try west next
-			  			{
-			    				mvDir=west;
-			            Xtarget = Xcurrent - 1;
-									loop_break1 = TRUE; // Break the loops
-									loop_break2 = TRUE;
-									printf("I'm going towards (%d, %d)!\n", Xtarget, Ytarget);
-			        }
-			        else
-			        	 direction = north;
-			  			break;
-
-						case north:
-								if(map[Ycurrent-1][Xcurrent] == 'O' && map[Ycurrent-2][Xcurrent] == '_' || map[Ycurrent-1][Xcurrent] == '~' && map[Ycurrent-2][Xcurrent] == '_') // Then north
-			  				{
-									mvDir=north;
-			          	Ytarget = Ycurrent - 1;
-									loop_break1 = TRUE; // Break the loops
-									loop_break2 = TRUE;
-									printf("I'm going towards (%d, %d)!\n", Xtarget, Ytarget);
-								}
-			  				else
-			        		direction = east;
-			        	break;
-
-						case east:
-								if(map[Ycurrent][Xcurrent+1] == 'O' && map[Ycurrent][Xcurrent+2] == '_' || map[Ycurrent][Xcurrent+1] == '~' && map[Ycurrent][Xcurrent+2] == '_') // Lastly east
-			  				{
-			        		mvDir=east;
-			            Xtarget = Xcurrent + 1;
-									loop_break1 = TRUE; // Break the loops
-									loop_break2 = TRUE;
-									printf("I'm going towards (%d, %d)!\n", Xtarget, Ytarget);
-								}
-								else
-									state = unstuck_method; // If none of these methods works, move to unstucking mode.
-									loop_break2 = TRUE;
-			        	break;
-							}
-					}
-					break;
-
-					case unstuck_method:	//Breaking out of a pickle
-						printf("Look like I am stuck! Trying to break out!\n");
-						for(int a = 0; a < Ymax; a++) //Scan the created map to find a blank spot that is neighbouring to an empty spot
-							{
-								if (!spot_located)
-								{
-									for(int b = 0; b < Xmax; b++)
-										{
-											if(map[a][b] == '_') //Breaking it up to 4 different direction so that it is less a pain to write
-												{
-													if(map[a+1][b] == 'O' || map[a+1][b] == '~') //If the adjacent spot is an empty spot
-													{
-														Xtarget = b;
-														Ytarget = a;
-														spot_located = 1;
-														printf("I've found a good spot to go to, target coordinate is (%d, %d)!\n", Xtarget, Ytarget);
-														break;
-													}
-													else if(map[a-1][b] == 'O' || map[a-1][b] == '~')
-													{
-														Xtarget = b;
-														Ytarget = a;
-														spot_located = 1;
-														printf("I've found a good spot to go to, target coordinate is (%d, %d)!\n", Xtarget, Ytarget);
-														break;
-													}
-													else if(map[a][b-1] == 'O' || map[a][b-1] == '~')
-													{
-														Xtarget = b;
-														Ytarget = a;
-														spot_located = 1;
-														printf("I've found a good spot to go to, target coordinate is (%d, %d)!\n", Xtarget, Ytarget);
-														break;
-													}
-													else if(map[a][b+1] == 'O' || map[a][b+1] == '~')
-													{
-														Xtarget = b;
-														Ytarget = a;
-														spot_located = 1;
-														break;
-														printf("I've found a good spot to go to, target coordinate is (%d, %d)!\n", Xtarget, Ytarget);
-													}
-												}
-										}
-								}
-								else
-								{
-									printf("Good spot located!\n", Xtarget, Ytarget);
-									break;
-								}
-								}
-							 targeted_move();	//move here
-							 loop_break1 = TRUE; // Break the loops
-							 break;
+			case check_target: //If literally adjacent to the target
+				printf("Looking for target!\n");
+				if(map[Ycurrent-1][Xcurrent] == 'T')        //check north
+	  				{
+							printf("Target found, going North!\n");
+							mvDir = north; //go to north
+							target_located = TRUE;
+							loop_break1 = TRUE;
+							break;
 						}
-			}
-		}
+	  		else if(map[Ycurrent][Xcurrent+1] == 'T')   //check east
+	    		  {
+							printf("Target found, going East!\n");
+							mvDir = east; //go to east
+							target_located = TRUE;
+							loop_break1 = TRUE;
+							break;
+						}
+	  		else if(map[Ycurrent+1][Xcurrent] == 'T')	  //check south
+	    		  {
+							printf("Target found, going South!\n");
+							mvDir = south;//go to south
+							target_located = TRUE;
+							loop_break1 = TRUE;
+							break;
+						}
+	  		else if(map[Ycurrent][Xcurrent-1] == 'T')		//check west
+						{
+							printf("Target found, going West!\n");
+							mvDir = west; //go to west
+							target_located = TRUE;
+							loop_break1 = TRUE;
+							break;
+						}
+	  		else
+	    		state = prioritization_method;
 
-		else
-		{
-			printf("I'm returning to base!\n");
-			targeted_move();
+
+			case prioritization_method: 			// Quickest way to go to a blank spot
+				printf("Target is not found! Trying to explore and find the target!\n");
+				loop_break2 = FALSE;
+				direction = south;
+	 			while (!loop_break2)
+				{
+					switch(direction)
+		 			{
+					case south:
+							if(map[Ycurrent+1][Xcurrent] == 'O' && map[Ycurrent+2][Xcurrent] == '_' || map[Ycurrent+1][Xcurrent] == '~' && map[Ycurrent+2][Xcurrent] == '_') // Go south if the spot after that is unknown
+		  				{
+								mvDir=south;					//move direction south
+		         	  Ytarget = Ycurrent + 1; //change the target coordinates for checking
+								loop_break1 = TRUE; // Break the loops
+								loop_break2 = TRUE;
+								printf("I'm going towards (%d, %d)!\n", Xtarget, Ytarget);
+							}
+		  				else
+		        		direction = west;
+		        	break;
+
+		    	case west:
+		 				if(map[Ycurrent][Xcurrent-1] == 'O' && map[Ycurrent][Xcurrent-2] == '_' || map[Ycurrent][Xcurrent-1] == '~' && map[Ycurrent][Xcurrent-2] == '_') // Try west next
+		  			{
+		    				mvDir=west;
+		            Xtarget = Xcurrent - 1;
+								loop_break1 = TRUE; // Break the loops
+								loop_break2 = TRUE;
+								printf("I'm going towards (%d, %d)!\n", Xtarget, Ytarget);
+		        }
+		        else
+		        	 direction = north;
+		  			break;
+
+					case north:
+							if(map[Ycurrent-1][Xcurrent] == 'O' && map[Ycurrent-2][Xcurrent] == '_' || map[Ycurrent-1][Xcurrent] == '~' && map[Ycurrent-2][Xcurrent] == '_') // Then north
+		  				{
+								mvDir=north;
+		          	Ytarget = Ycurrent - 1;
+								loop_break1 = TRUE; // Break the loops
+								loop_break2 = TRUE;
+								printf("I'm going towards (%d, %d)!\n", Xtarget, Ytarget);
+							}
+		  				else
+		        		direction = east;
+		        	break;
+
+					case east:
+							if(map[Ycurrent][Xcurrent+1] == 'O' && map[Ycurrent][Xcurrent+2] == '_' || map[Ycurrent][Xcurrent+1] == '~' && map[Ycurrent][Xcurrent+2] == '_') // Lastly east
+		  				{
+		        		mvDir=east;
+		            Xtarget = Xcurrent + 1;
+								loop_break1 = TRUE; // Break the loops
+								loop_break2 = TRUE;
+								printf("I'm going towards (%d, %d)!\n", Xtarget, Ytarget);
+							}
+							else
+								state = unstuck_method; // If none of these methods works, move to unstucking mode.
+								loop_break2 = TRUE;
+		        	break;
+						}
+				}
+				break;
+
+				case unstuck_method:	//Breaking out of a pickle
+					printf("Look like I am stuck! Trying to break out!\n");
+					for(int a = 0; a < Ymax; a++) //Scan the created map to find a blank spot that is neighbouring to an empty spot
+						{
+							if (!spot_located)
+							{
+								for(int b = 0; b < Xmax; b++)
+									{
+										if(map[a][b] == '_') //Breaking it up to 4 different direction so that it is less a pain to write
+											{
+												if(map[a+1][b] == 'O' || map[a+1][b] == '~') //If the adjacent spot is an empty spot
+												{
+													Xtarget = b;
+													Ytarget = a;
+													spot_located = 1;
+													printf("I've found a good spot to go to, target coordinate is (%d, %d)!\n", Xtarget, Ytarget);
+													break;
+												}
+												else if(map[a-1][b] == 'O' || map[a-1][b] == '~')
+												{
+													Xtarget = b;
+													Ytarget = a;
+													spot_located = 1;
+													printf("I've found a good spot to go to, target coordinate is (%d, %d)!\n", Xtarget, Ytarget);
+													break;
+												}
+												else if(map[a][b-1] == 'O' || map[a][b-1] == '~')
+												{
+													Xtarget = b;
+													Ytarget = a;
+													spot_located = 1;
+													printf("I've found a good spot to go to, target coordinate is (%d, %d)!\n", Xtarget, Ytarget);
+													break;
+												}
+												else if(map[a][b+1] == 'O' || map[a][b+1] == '~')
+												{
+													Xtarget = b;
+													Ytarget = a;
+													spot_located = 1;
+													break;
+													printf("I've found a good spot to go to, target coordinate is (%d, %d)!\n", Xtarget, Ytarget);
+												}
+											}
+									}
+							}
+							else
+							{
+								printf("Good spot located!\n", Xtarget, Ytarget);
+								break;
+							}
+							}
+						 targeted_move();	//move here
+						 loop_break1 = TRUE; // Break the loops
+						 break;
+					}
 		}
 
   if(map[Ytarget][Xtarget] == '~' && driveMode == land || map[Ytarget][Xtarget] == 'W' && driveMode == land) //If the target location is water and drive mode is land
@@ -638,8 +620,6 @@ int move(char *world) {
 
 	if (mvDir != modeSwitch)
 	{
-		Xold = Xcurrent;
-		Yold = Ycurrent;
 		Xcurrent = Xtarget;
 		Ycurrent = Ytarget;
 	}
