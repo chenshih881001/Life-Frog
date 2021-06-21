@@ -864,7 +864,7 @@ int move(char *world, int map_id)
   }
 
   printf("Move number %d\n", indEx+1);
-  printf(">>>>>>>>>> Next Node: (%d, %d) - %c \n",coord_f[indEx].row, coord_f[indEx].col, map[coord_f[indEx].row][coord_f[indEx].col]);
+  printf(">>>> Robot vision of next Node: (%d, %d) - %c \n",coord_f[indEx].row, coord_f[indEx].col, map[coord_f[indEx].row][coord_f[indEx].col]);
   if (!base_returned && path_init)  //If there is a path inititiated and not yet returned
   {
       mvDir = path_f[indEx];
