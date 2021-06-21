@@ -415,7 +415,12 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
 
             else if (!closedList[i - 1][j] && isOpen(map, i - 1, j))  //If the node is not closed and is on not blocked
             {
-                gNew = node[i][j].g + 1.0;                            //Calculate the g (always 1 more than the previous), h and f.
+                if(map[i - 1][j] == '*')  //If it is a wall, make the local cost higher
+                {
+                  gNew = node[i][j].g + 2.0;
+                }  //If it is a wall, make the local cost higher
+                else
+                  {gNew = node[i][j].g + 1.0;}                            //Calculate the g (always 1 more than the previous), h and f.
                 hNew = heuristic_calc(i - 1, j, target);
                 fNew = gNew + hNew;
 
@@ -465,7 +470,12 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
 
             else if (!closedList[i + 1][j] && isOpen(map, i + 1, j))
             {
-                gNew = node[i][j].g + 1.0;
+              if(map[i + 1][j] == '*')  //If it is a wall, make the local cost higher
+              {
+                gNew = node[i][j].g + 2.0;
+              }  //If it is a wall, make the local cost higher
+              else
+                {gNew = node[i][j].g + 1.0;  }                          //Calculate the g (always 1 more than the previous), h and f.
                 hNew = heuristic_calc(i + 1, j, target);
                 fNew = gNew + hNew;
 
@@ -511,7 +521,14 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
             }
             else if (!closedList[i][j + 1] && isOpen(map, i, j + 1))
             {
-                gNew = node[i][j].g + 1.0;
+              if(map[i][j +1 ] == '*')  //If it is a wall, make the local cost higher
+              {
+                gNew = node[i][j].g + 2.0;
+              }  //If it is a wall, make the local cost higher
+              else
+              {
+                gNew = node[i][j].g + 1.0;                            //Calculate the g (always 1 more than the previous), h and f.
+              }
                 hNew = heuristic_calc(i, j + 1, target);
                 fNew = gNew + hNew;
 
@@ -557,7 +574,15 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
             }
             else if (!closedList[i][j - 1] && isOpen(map, i, j - 1))
             {
+              if(map[i][j - 1] == '*')
+              {
+                gNew = node[i][j].g + 2.0;
+              }  //If it is a wall, make the local cost higher
+
+              else
+              {
                 gNew = node[i][j].g + 1.0;
+              }
                 hNew = heuristic_calc(i, j - 1, target);
                 fNew = gNew + hNew;
 
@@ -701,92 +726,103 @@ int calculate_total_cost(int cnt_pth, struct pair *coords)  //Estimate the total
 
 void compare_cost()
 {
-  //If the run is sucessful, calculate the energy cost. If failed, make the energy infinite.
-  if(p1)
-    energy1 = calculate_total_cost(cnt_pth1, coord1);
-  else
-    energy1 = INT_MAX;
-
-  if(p2)
-    energy2 = calculate_total_cost(cnt_pth2, coord2);
-  else
-    energy2 = INT_MAX;
-
-  if(p3)
-    energy3 = calculate_total_cost(cnt_pth3, coord3);
-  else
-    energy3 = INT_MAX;
-
-  if(p4)
-    energy4 = calculate_total_cost(cnt_pth4, coord4);
-  else
-    energy4 = INT_MAX;
-
-
-  printf("Energy of each path respectively: 1 - %d | 2 - %d | 3 - %d | 4 - %d \n", energy1, energy2, energy3, energy4);
-
-  int a, b, final;
-  int x, y;
-
-  // compare the energy level of each paths
-  if(energy1 <= energy2)
+  if(!p1 && !p2 && !p3 && !p4)
   {
-    a = 1;
-    x = energy1;
-  }
-  else
-  {
-    a = 2;
-    x = energy2;
-  }
-
-  if(energy3 <= energy4)
-  {
-    b = 3;
-    y = energy3;
+    printf("None of the path go to the target!\n");
+    return;
   }
 
   else
   {
-    b = 4;
-    y = energy4;
+    //If the run is sucessful, calculate the energy cost. If failed, make the energy infinite.
+    if(p1)
+      energy1 = calculate_total_cost(cnt_pth1, coord1);
+    else
+      energy1 = INT_MAX;
+
+    if(p2)
+      energy2 = calculate_total_cost(cnt_pth2, coord2);
+    else
+      energy2 = INT_MAX;
+
+    if(p3)
+      energy3 = calculate_total_cost(cnt_pth3, coord3);
+    else
+      energy3 = INT_MAX;
+
+    if(p4)
+      energy4 = calculate_total_cost(cnt_pth4, coord4);
+    else
+      energy4 = INT_MAX;
+
+
+    printf("\n_________________________________________________________________________\n", energy1, energy2, energy3, energy4);
+    printf("\nEnergy of each path respectively: 1 - %d | 2 - %d | 3 - %d | 4 - %d \n", energy1, energy2, energy3, energy4);
+    printf("\n_________________________________________________________________________\n", energy1, energy2, energy3, energy4);
+
+    int a, b, final;
+    int x, y;
+
+    // compare the energy level of each paths
+    if(energy1 <= energy2)
+    {
+      a = 1;
+      x = energy1;
+    }
+    else
+    {
+      a = 2;
+      x = energy2;
+    }
+
+    if(energy3 <= energy4)
+    {
+      b = 3;
+      y = energy3;
+    }
+
+    else
+    {
+      b = 4;
+      y = energy4;
+    }
+
+    // Pick the most efficient one
+    final = (x <= y) ? a : b;
+
+    printf("Path number %d won with the lowest energy!\n", final);
+    switch(final) //Copy the most efficient path into the final variable to use
+    {
+      case 1:
+        cnt_path = cnt_pth1;
+        memcpy(path_f, path_1, sizeof(path_1));
+        memcpy(coord_f, coord1, sizeof(coord1));
+        break;
+      case 2:
+        cnt_path = cnt_pth2;
+        memcpy(path_f, path_2, sizeof(path_2));
+        memcpy(coord_f, coord2, sizeof(coord2));
+        break;
+      case 3:
+        cnt_path = cnt_pth3;
+        memcpy(path_f, path_3, sizeof(path_3));
+        memcpy(coord_f, coord3, sizeof(coord3));
+        break;
+      case 4:
+        cnt_path = cnt_pth4;
+        memcpy(path_f, path_4, sizeof(path_4));
+        memcpy(coord_f, coord4, sizeof(coord4));
+        break;
+    }
+    printf("Final step counter: %d\n", cnt_path);
+
+    path_init = true;
+    for(int i = 0; i < cnt_path; i++)
+        printf("-> %d ,(%d, %d); ", path_f[i], coord_f[i].row, coord_f[i].col);
+    printf("\n");
+
+    return;
   }
-
-  // Pick the most efficient one
-  final = (x <= y) ? a : b;
-
-  printf("Path number %d won with the lowest energy!\n", final);
-  switch(final) //Copy the most efficient path into the final variable to use
-  {
-    case 1:
-      cnt_path = cnt_pth1;
-      memcpy(path_f, path_1, sizeof(path_1));
-      memcpy(coord_f, coord1, sizeof(coord1));
-      break;
-    case 2:
-      cnt_path = cnt_pth2;
-      memcpy(path_f, path_2, sizeof(path_2));
-      memcpy(coord_f, coord2, sizeof(coord2));
-      break;
-    case 3:
-      cnt_path = cnt_pth3;
-      memcpy(path_f, path_3, sizeof(path_3));
-      memcpy(coord_f, coord3, sizeof(coord3));
-      break;
-    case 4:
-      cnt_path = cnt_pth4;
-      memcpy(path_f, path_4, sizeof(path_4));
-      memcpy(coord_f, coord4, sizeof(coord4));
-      break;
-  }
-  printf("Final step counter: %d\n", cnt_path);
-
-  path_init = true;
-  for(int i = 0; i < cnt_path; i++)
-      printf("-> %d ,(%d, %d); ", path_f[i], coord_f[i].row, coord_f[i].col);
-  printf("\n");
-
-  return;
 }
 
 int move(char *world, int map_id)
