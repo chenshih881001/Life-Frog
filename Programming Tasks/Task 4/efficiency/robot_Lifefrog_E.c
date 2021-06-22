@@ -45,7 +45,7 @@ int origin_row, origin_col, target_row, target_col, path_mode = 1, cnt_pth1, cnt
 
 int path_1[MAX_STEPS] = {0}, path_2[MAX_STEPS] = {0}, path_3[MAX_STEPS] = {0}, path_4[MAX_STEPS] = {0}, path_f[MAX_STEPS];  //Initiallizing diferrent paths and path_f is the final path
 
-bool p1 = false, p2 = false, p3 = false, p4 = false, target_reached = false, base_returned = false, map_init = false, path_init = false, index_init = false; //Bunch of flags. The p's are for checking whether there is a path found for that path mode
+bool p1 = false, p2 = false, p3 = false, p4 = false, target_reached = false, base_returned = false, path_init = false, index_init = false; //Bunch of flags. The p's are for checking whether there is a path found for that path mode
 
 int drive_mode = land, indEx = 0, mvDir;
 
@@ -58,12 +58,13 @@ struct pair //creating a struct for pair of coordinates for ease of usage
 struct pPair  //creating a struct for a pair of total cost coordinates for the open list
 {
   double f;
+  int type;
   struct pair coord;
 };
 
 struct nodes			//Creating struct for the nodes;
 {
-	int parent_row, parent_col;	//Row and column position of the parents
+	int parent_row, parent_col, type, parent_type;	//Row and column position of the parents
 	double f, g, h;			//f = sum of cost, g = movement cost from starting point to given cell, h = estimated movement cost from current cell to destination
   char travel_dir;
 };
@@ -228,7 +229,7 @@ void draw_path(struct nodes node[][max_col], struct pair target)  //Collecting t
   path[count].col = col;
   moves[count] = node[row][col].travel_dir;
   for(int i = count; i >= 0; i--)
-    printf("-> (%d,%d, %c) ", path[i].row, path[i].col, moves[i]);
+    printf("->(%c|%d, %d) ", moves[i], path[i].row, path[i].col);
   printf("\n");
 
   int steps = 0;
@@ -248,6 +249,7 @@ void draw_path(struct nodes node[][max_col], struct pair target)  //Collecting t
   }
 
   printf("The number of steps is %d, and discounting the origin: %d\n", steps, true_steps);
+  printf("---------------------------------------------------------\n\n", steps, true_steps);
 
   struct pair tmp_path[true_steps];
 
@@ -339,7 +341,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
   struct nodes node[max_row][max_col]; //Initiallize the nodes with in the map
 
   int turn_count = 1; // Turn counter (For debugging)
-  int i, j; //Variable for ease of typing i = row, j = column
+  int i, j, a, b, tmp_type; //Variable for ease of typing i = row, j = column
 
   for (i = 0; i<max_row; i++) // Assign all of the node
   {
@@ -350,23 +352,27 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
       node[i][j].h = FLT_MAX; //inf h
       node[i][j].parent_row = -1; //invalid parent row
       node[i][j].parent_col = -1; //invalid parent column
+      node[i][j].type = -1; //invalid type
       node[i][j].travel_dir = 'U';//unknown travel direction
     }
   }
 
-  i = origin.row, j = origin.col; //Make i and j the origin
+  i = origin.row, j = origin.col, tmp_type = land; //Make i and j the origin
 
   node[i][j].f = 0.0;//reset the origin basically
   node[i][j].g = 0.0;
   node[i][j].h = 0.0;
   node[i][j].parent_row = i;
   node[i][j].parent_col = j;
+  node[i][j].type = tmp_type;
+  node[i][j].parent_type = tmp_type;
   node[i][j].travel_dir = 'O';
 
   int list_count = 0; //Initiallize a counter for the open nodes that need to be tested
   struct pPair openList[max_col * max_row]; //Initiallize an list of open nodes
   //Make the first in the list the origin node
   openList[list_count].f = node[i][j].f;
+  openList[list_count].type = tmp_type;
   openList[list_count].coord.row = origin.row;
   openList[list_count].coord.col = origin.col;
   list_count++;
@@ -392,6 +398,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
     list_count--; //subtract the count by 1
     i = tmp.coord.row;  //assign the i and j as the node that need to be tested
     j = tmp.coord.col;
+    tmp_type = node[i][j].type;
 
     //printf("Testing row: %d, col: %d.\n", i,j);
 
@@ -407,6 +414,8 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                 node[i - 1][j].parent_row = i;     // Set the parent of the destination node
                 node[i - 1][j].parent_col = j;
                 node[i - 1][j].travel_dir = 'N';
+                node[i - 1][j].parent_type = tmp_type;
+                node[i - 1][j].type = (map[i - 1][j] == '~' || map[i - 1][j] == 't') ? water : land;
                 printf("The target is found\n");
                 draw_path(node, target);  //Collect the path
                 target_located = true;    // Set that a path is found
@@ -415,12 +424,38 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
 
             else if (!closedList[i - 1][j] && isOpen(map, i - 1, j))  //If the node is not closed and is on not blocked
             {
-                if(map[i - 1][j] == '*')  //If it is a wall, make the local cost higher
+              //Calculate the g, h and f.
+
+                if(map[i - 1][j] == '*')
                 {
-                  gNew = node[i][j].g + 2.0;
-                }  //If it is a wall, make the local cost higher
-                else
-                  {gNew = node[i][j].g + 1.0;}                            //Calculate the g (always 1 more than the previous), h and f.
+                  gNew = node[i][j].g + 1.7; //If it is a wall, make the local cost higher
+                }
+                else if(node[i][j].type == land)
+                {
+                  if(map[i - 1][j] == '~' || map[i - 1][j] == 't')
+                  {
+                    gNew = node[i][j].g + 1.3; //If different land type
+                    //printf("CHANGING MODE!\n" );
+                  }
+                  else
+                  {
+                    gNew = node[i][j].g + 1.0;  //If same land type
+                  }
+
+                }
+                else if(node[i][j].type == water)
+                {
+                  if(map[i - 1][j] == 'O' || map[i - 1][j] == 'T' || map[i - 1][j] == 'X' || map[i - 1][j] == '*')
+                  {
+                    gNew = node[i][j].g + 1.3; //If different land type
+                    //printf("CHANGING MODE!\n" );
+                  }
+                  else
+                  {
+                    gNew = node[i][j].g + 1.0;  //If same land type
+                  }
+                }
+
                 hNew = heuristic_calc(i - 1, j, target);
                 fNew = gNew + hNew;
 
@@ -432,6 +467,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                     openList[0].f = fNew;
                     openList[0].coord.row = i - 1;
                     openList[0].coord.col = j;
+                    openList[0].type = node[i][j].type;
 
                   /*  printf("The values of the open list so far after adding a new neighbour: ");
                     for (int a = 0; a < list_count; a++)
@@ -447,6 +483,8 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                     node[i - 1][j].parent_row = i;
                     node[i - 1][j].parent_col = j;
                     node[i - 1][j].travel_dir = 'N';
+                    node[i - 1][j].type = (map[i - 1][j] == '~' || map[i - 1][j] == 't') ? water : land;
+                    node[i - 1][j].parent_type = node[i][j].type;
                 }
             }
         }
@@ -462,20 +500,45 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                 node[i + 1][j].parent_row = i;
                 node[i + 1][j].parent_col = j;
                 node[i + 1][j].travel_dir = 'S';
+                node[i + 1][j].parent_type = tmp_type;
+                node[i + 1][j].type = (map[i + 1][j] == '~' || map[i + 1][j] == 't') ? water : land;
                 printf("The target is found\n");
                 draw_path(node, target);
                 target_located = true;
                 return;
             }
 
-            else if (!closedList[i + 1][j] && isOpen(map, i + 1, j))
+          else if (!closedList[i + 1][j] && isOpen(map, i + 1, j))
+          {
+            if(map[i + 1][j] == '*')
             {
-              if(map[i + 1][j] == '*')  //If it is a wall, make the local cost higher
+              gNew = node[i][j].g + 1.7; //If it is a wall, make the local cost higher
+            }
+            else if(node[i][j].type == land)
+            {
+              if(map[i + 1][j] == '~' || map[i + 1][j] == 't')
               {
-                gNew = node[i][j].g + 2.0;
-              }  //If it is a wall, make the local cost higher
+                gNew = node[i][j].g + 1.3; //If different land type
+                //printf("CHANGING MODE!\n");
+              }
               else
-                {gNew = node[i][j].g + 1.0;  }                          //Calculate the g (always 1 more than the previous), h and f.
+              {
+                gNew = node[i][j].g + 1.0;  //If same land type
+              }
+
+            }
+            else if(node[i][j].type == water)
+            {
+              if(map[i + 1][j] == 'O' || map[i + 1][j] == 'T' || map[i + 1][j] == 'X' || map[i + 1][j] == '*')
+              {
+                gNew = node[i][j].g + 1.3; //If different land type
+                //printf("CHANGING MODE!\n" );
+              }
+              else
+              {
+                gNew = node[i][j].g + 1.0;  //If same land type
+              }
+            }
                 hNew = heuristic_calc(i + 1, j, target);
                 fNew = gNew + hNew;
 
@@ -487,6 +550,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                     openList[0].f = fNew;
                     openList[0].coord.row = i + 1;
                     openList[0].coord.col = j;
+                    openList[0].type = node[i][j].type;
 
                     /*printf("The values of the open list so far after adding a new neighbour: ");
                     for (int a = 0; a < list_count; a++)
@@ -502,6 +566,8 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                     node[i + 1][j].parent_row = i;
                     node[i + 1][j].parent_col = j;
                     node[i + 1][j].travel_dir = 'S';
+                    node[i + 1][j].type = (map[i + 1][j] == '~' || map[i + 1][j] == 't') ? water : land;
+                    node[i + 1][j].parent_type = node[i][j].type;
                 }
             }
         }
@@ -514,6 +580,8 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                 node[i][j + 1].parent_row = i;
                 node[i][j + 1].parent_col = j;
                 node[i][j + 1].travel_dir = 'E';
+                node[i][j + 1].parent_type = tmp_type;
+                node[i][j + 1].type = (map[i - 1][j] == '~' || map[i - 1][j] == 't') ? water : land;
                 printf("The target is found\n");
                 draw_path(node, target);
                 target_located = true;
@@ -521,13 +589,34 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
             }
             else if (!closedList[i][j + 1] && isOpen(map, i, j + 1))
             {
-              if(map[i][j +1 ] == '*')  //If it is a wall, make the local cost higher
+              if(map[i][j + 1] == '*')
               {
-                gNew = node[i][j].g + 2.0;
-              }  //If it is a wall, make the local cost higher
-              else
+                gNew = node[i][j].g + 1.7; //If it is a wall, make the local cost higher
+              }
+              else if(node[i][j].type == land)
               {
-                gNew = node[i][j].g + 1.0;                            //Calculate the g (always 1 more than the previous), h and f.
+                if(map[i][j + 1] == '~' || map[i][j + 1] == 't')
+                {
+                  gNew = node[i][j].g + 1.3; //If different land type
+                  //printf("CHANGING MODE!\n");
+                }
+                else
+                {
+                  gNew = node[i][j].g + 1.0;  //If same land type
+                }
+
+              }
+              else if(node[i][j].type == water)
+              {
+                if(map[i][j + 1] == 'O' || map[i][j + 1] == 'T' || map[i][j + 1] == 'X' || map[i][j + 1] == '*')
+                {
+                  gNew = node[i][j].g + 1.3; //If different land type
+                  //printf("CHANGING MODE!\n");
+                }
+                else
+                {
+                  gNew = node[i][j].g + 1.0;  //If same land type
+                }
               }
                 hNew = heuristic_calc(i, j + 1, target);
                 fNew = gNew + hNew;
@@ -540,6 +629,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                     openList[0].f = fNew;
                     openList[0].coord.row = i;
                     openList[0].coord.col = j + 1;
+                    openList[0].type = node[i][j].type;
 
             /*        printf("The values of the open list so far after adding a new neighbour: ");
                     for (int a = 0; a < list_count; a++)
@@ -555,6 +645,8 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                     node[i][j + 1].parent_row = i;
                     node[i][j + 1].parent_col = j;
                     node[i][j + 1].travel_dir = 'E';
+                    node[i][j + 1].type = (map[i][j + 1] == '~' || map[i][j + 1] == 't') ? water : land;
+                    node[i][j + 1].parent_type = node[i][j].type;
                 }
             }
         }
@@ -567,6 +659,8 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                 node[i][j - 1].parent_row = i;
                 node[i][j - 1].parent_col = j;
                 node[i][j - 1].travel_dir = 'W';
+                node[i][j - 1].parent_type = tmp_type;
+                node[i][j - 1].type = (map[i][j - 1] == '~' || map[i][j - 1] == 't') ? water : land;
                 printf("The target is found\n");
                 draw_path(node, target);
                 target_located = true;
@@ -576,12 +670,32 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
             {
               if(map[i][j - 1] == '*')
               {
-                gNew = node[i][j].g + 2.0;
-              }  //If it is a wall, make the local cost higher
-
-              else
+                gNew = node[i][j].g + 1.7; //If it is a wall, make the local cost higher
+              }
+              else if(node[i][j].type == land)
               {
-                gNew = node[i][j].g + 1.0;
+                if(map[i][j - 1] == '~' || map[i][j - 1] == 't')
+                {
+                  gNew = node[i][j].g + 1.3; //If different land type
+                  //printf("CHANGING MODE!\n");
+                }
+                else
+                {
+                  gNew = node[i][j].g + 1.0;  //If same land type
+                }
+
+              }
+              else if(node[i][j].type == water)
+              {
+                if(map[i][j - 1] == 'O' || map[i][j - 1] == 'T' || map[i][j - 1] == 'X' || map[i][j - 1] == '*')
+                {
+                  gNew = node[i][j].g + 1.3; //If different land type
+                  //printf("CHANGING MODE!\n");
+                }
+                else
+                {
+                  gNew = node[i][j].g + 1.0;  //If same land type
+                }
               }
                 hNew = heuristic_calc(i, j - 1, target);
                 fNew = gNew + hNew;
@@ -594,6 +708,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                     openList[0].f = fNew;
                     openList[0].coord.row = i;
                     openList[0].coord.col = j - 1;
+                    openList[0].type = node[i][j].type;
 
         /*            printf("The values of the open list so far after adding a new neighbour: ");
                     for (int a = 0; a < list_count; a++)
@@ -609,6 +724,8 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                     node[i][j - 1].parent_row = i;
                     node[i][j - 1].parent_col = j;
                     node[i][j - 1].travel_dir = 'W';
+                    node[i][j - 1].type = (map[i][j - 1] == '~' || map[i][j - 1] == 't') ? water : land;
+                    node[i][j - 1].parent_type = node[i][j].type;
                 }
             }
         }
@@ -758,7 +875,6 @@ void compare_cost()
 
     printf("\n_________________________________________________________________________\n", energy1, energy2, energy3, energy4);
     printf("\nEnergy of each path respectively: 1 - %d | 2 - %d | 3 - %d | 4 - %d \n", energy1, energy2, energy3, energy4);
-    printf("\n_________________________________________________________________________\n", energy1, energy2, energy3, energy4);
 
     int a, b, final;
     int x, y;
@@ -790,7 +906,8 @@ void compare_cost()
     // Pick the most efficient one
     final = (x <= y) ? a : b;
 
-    printf("Path number %d won with the lowest energy!\n", final);
+    printf("\nPath number %d won with the lowest energy!\n", final);
+    printf("\n_________________________________________________________________________\n", energy1, energy2, energy3, energy4);
     switch(final) //Copy the most efficient path into the final variable to use
     {
       case 1:
@@ -814,12 +931,12 @@ void compare_cost()
         memcpy(coord_f, coord4, sizeof(coord4));
         break;
     }
-    printf("Final step counter: %d\n", cnt_path);
+    printf("\nFinal step counter: %d\n\n", cnt_path);
 
     path_init = true;
     for(int i = 0; i < cnt_path; i++)
-        printf("-> %d ,(%d, %d); ", path_f[i], coord_f[i].row, coord_f[i].col);
-    printf("\n");
+        printf("->(%d|%d, %d) ", path_f[i], coord_f[i].row, coord_f[i].col);
+    printf("\n\n");
 
     return;
   }
@@ -833,7 +950,6 @@ int move(char *world, int map_id)
     target_reached = false;
     base_returned = false;
     path_init = false;
-    map_init = false;
     index_init = false;
     p1 = false;
     p2 = false;
@@ -847,11 +963,7 @@ int move(char *world, int map_id)
 
   mvDir = 0; //Reset move direction each time;
 
-  if(!map_init)
-  {
-    copy_map(world);
-    map_init = true;
-  }
+  copy_map(world);
 
   if(!index_init)
   {
@@ -893,7 +1005,7 @@ int move(char *world, int map_id)
 
     while(path_mode <= 4) //Cycling through all of the pathing modes
     {
-      a_star(map, origin, target);  //Calculate a path from target to origin
+      a_star(map, target, origin);  //Calculate a path from target to origin
       path_mode++;
     }
     compare_cost();
@@ -945,8 +1057,6 @@ int move(char *world, int map_id)
 
         else if(mvDir == W) //Destroy the western wall if it is at the west
           mvDir = DES_W;
-
-        map_init = false; //Reset the map
       }
 
       if(mvDir != MODE_CHANGE && mvDir != DES_N && mvDir != DES_E && mvDir != DES_S && mvDir != DES_W)  //If none of these
@@ -956,8 +1066,7 @@ int move(char *world, int map_id)
           printf("Target reached!\n");
           target_reached = true;
           path_init = false;
-          map_init = false;
-          index_init = false;
+          //index_init = false;
           indEx = 0;
         }
 
@@ -967,7 +1076,6 @@ int move(char *world, int map_id)
           target_reached = false;
           base_returned = true;
           path_init = false;
-          map_init = false;
           index_init = false;
           indEx = 0;
         }
