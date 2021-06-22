@@ -52,6 +52,7 @@ int Xold, Yold;
 char spot_save;
 
 int Xtarget = Xmax/2, Ytarget = Ymax/2; //Variable for target direction
+int XtargetOld = 0, YtargetOld = 0; //For Target_Move to check if it needs to clear its map from footprints
 
 int driveMode = land, driveModeOld;
 int rock_break = 0;
@@ -173,23 +174,7 @@ void targeted_move()
 {
 	bool go=false;
 
-	//if(!worldiscopied)		//Copy map into the other maps
-//	{
-			for(int i = 0; i<Xmax; i++)
-			{
-				for(int j = 0; j<Ymax; j++)
-				{
-					if(map[j][i]=='W')
-						world2[i][j] = 'F';
-					else
-						world2[i][j] = map[j][i];		// the orientation is flipped for Christian's code lmao
-				}
-			}
-
-			memcpy(waterland, world2, sizeof(world2));
-
-
-			printf("\n");
+    			printf("\n");
 			if(!target_located)
 			{
 				tx = Xtarget;
@@ -204,6 +189,48 @@ void targeted_move()
 			ry = Ycurrent;
 			xx = Xorigin;
 			xy = Yorigin;
+	//if(!worldiscopied)		//Copy map into the other maps
+//	{
+            if(XtargetOld!=tx||YtargetOld!=ty)    //New Target? Clear map from Footprints!
+            {
+                printf("New Target!");
+                for(int i = 0; i<Xmax; i++)
+                {
+                    for(int j = 0; j<Ymax; j++)
+                    {
+                        if(map[j][i]=='W')
+                        {
+                            world2[i][j] = '~';
+                        }
+                        else if(map[j][i]=='F')
+                        {
+                            world2[i][j] = 'O';
+                        }
+                        else
+                        {
+                            world2[i][j] = map[j][i];
+                        }
+                    }
+                }
+                XtargetOld=tx;
+                YtargetOld=ty;
+            }
+            else //old target
+            {
+                for(int i = 0; i<Xmax; i++)
+                {
+                    for(int j = 0; j<Ymax; j++)
+                    {
+                        if(world2[i][j]=='_') //just update new stuff
+                            world2[i][j] = map[j][i]; // the orientation is flipped for Christian's code lmao
+                    }
+                }
+            }
+            
+            
+			memcpy(waterland, world2, sizeof(world2));
+
+
 		//	worldiscopied=true;
 //	}
 		printf("Robot: x=%i, y=%i;      Target: x=%i, y=%i;\n",rx,ry,tx,ty);
@@ -513,6 +540,8 @@ int move(char *world, int map_id)
       current_id = map_id;
       columns = 0;
       rows = 0;
+      XtargetOld = 0; 
+      YtargetOld = 0;
     }
 
 		if (!initMap)
