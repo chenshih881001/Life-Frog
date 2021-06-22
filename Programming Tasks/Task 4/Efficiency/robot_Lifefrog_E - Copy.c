@@ -29,7 +29,7 @@
 // 1: North, 2: East, 3: South, 4: West, 5: Toggle watern/land mode
 
 
-//Path modes: (SCRAPPED LMAO no 4. is #1 bc of the Cost calculator thing of A*)
+//Path modes:
 //1. Only moves on O
 //2. Moves on O and ~
 //3. Moves on O and *
@@ -41,7 +41,7 @@ char map[max_row][max_col];
 int current_id = -1;
 int c = 0;
 
-int origin_row, origin_col, target_row, target_col, path_mode = 4, cnt_pth1, cnt_pth2, cnt_pth3, cnt_pth4, cnt_path, energy1, energy2, energy3, energy4;
+int origin_row, origin_col, target_row, target_col, path_mode = 1, cnt_pth1, cnt_pth2, cnt_pth3, cnt_pth4, cnt_path, energy1, energy2, energy3, energy4;
 
 int path_1[MAX_STEPS] = {0}, path_2[MAX_STEPS] = {0}, path_3[MAX_STEPS] = {0}, path_4[MAX_STEPS] = {0}, path_f[MAX_STEPS];  //Initiallizing diferrent paths and path_f is the final path
 
@@ -95,7 +95,7 @@ bool isDestination(int row, int col, struct pair target)  //check to see if it i
 
 bool isOpen(char map[][max_col], int row, int col)  //check to see if the node is an obstacle or not
 {
-/*  if(path_mode == 1)  //No obstacles or water
+  if(path_mode == 1)  //No obstacles or water
   {
     if(map[row][col]=='O' || map[row][col]=='T' || map[row][col]=='t' || map[row][col]=='X')
       return true;
@@ -117,9 +117,9 @@ bool isOpen(char map[][max_col], int row, int col)  //check to see if the node i
       return true;
     else
       return false;
-  }*/
+  }
 
-  if(path_mode == 4) //All a go
+  else if(path_mode == 4) //All a go
   {
     if(map[row][col]=='O' || map[row][col]=='T' || map[row][col]=='t' || map[row][col]=='X' || map[row][col]=='~' || map[row][col]=='*')
       return true;
@@ -206,7 +206,7 @@ void shift_backward(struct pPair *openList, int list_count) //For shifting the w
 
 void draw_path(struct nodes node[][max_col], struct pair target)  //Collecting tha path that was created using A*
 {
-  //printf("\n Path %d is ", path_mode);
+  printf("\n Path %d is ", path_mode);
   int row = target.row;
   int col = target.col;
   int count = 0;
@@ -228,9 +228,9 @@ void draw_path(struct nodes node[][max_col], struct pair target)  //Collecting t
   path[count].row = row;  //For the origin
   path[count].col = col;
   moves[count] = node[row][col].travel_dir;
-/*  for(int i = count; i >= 0; i--)
+  for(int i = count; i >= 0; i--)
     printf("->(%c|%d, %d) ", moves[i], path[i].row, path[i].col);
-  printf("\n"); */
+  printf("\n");
 
   int steps = 0;
   int true_steps = 0;
@@ -248,8 +248,8 @@ void draw_path(struct nodes node[][max_col], struct pair target)  //Collecting t
     }
   }
 
-  //printf("The number of steps is %d, and discounting the origin: %d\n", steps, true_steps);
-  //printf("---------------------------------------------------------\n\n", steps, true_steps);
+  printf("The number of steps is %d, and discounting the origin: %d\n", steps, true_steps);
+  printf("---------------------------------------------------------\n\n", steps, true_steps);
 
   struct pair tmp_path[true_steps];
 
@@ -445,7 +445,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
                 }
                 else if(node[i][j].type == water)
                 {
-                  if(map[i - 1][j] == 'O' || map[i - 1][j] == 'T' || map[i - 1][j] == '*')
+                  if(map[i - 1][j] == 'O' || map[i - 1][j] == 'T' || map[i - 1][j] == 'X' || map[i - 1][j] == '*')
                   {
                     gNew = node[i][j].g + 1.3; //If different land type
                     //printf("CHANGING MODE!\n" );
@@ -529,7 +529,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
             }
             else if(node[i][j].type == water)
             {
-              if(map[i + 1][j] == 'O' || map[i + 1][j] == 'T' || map[i + 1][j] == '*')
+              if(map[i + 1][j] == 'O' || map[i + 1][j] == 'T' || map[i + 1][j] == 'X' || map[i + 1][j] == '*')
               {
                 gNew = node[i][j].g + 1.3; //If different land type
                 //printf("CHANGING MODE!\n" );
@@ -608,7 +608,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
               }
               else if(node[i][j].type == water)
               {
-                if(map[i][j + 1] == 'O' || map[i][j + 1] == 'T' || map[i][j + 1] == '*')
+                if(map[i][j + 1] == 'O' || map[i][j + 1] == 'T' || map[i][j + 1] == 'X' || map[i][j + 1] == '*')
                 {
                   gNew = node[i][j].g + 1.3; //If different land type
                   //printf("CHANGING MODE!\n");
@@ -687,7 +687,7 @@ void a_star(char map[][max_col], struct pair origin, struct pair target)  //The 
               }
               else if(node[i][j].type == water)
               {
-                if(map[i][j - 1] == 'O' || map[i][j - 1] == 'T' || map[i][j - 1] == '*')
+                if(map[i][j - 1] == 'O' || map[i][j - 1] == 'T' || map[i][j - 1] == 'X' || map[i][j - 1] == '*')
                 {
                   gNew = node[i][j].g + 1.3; //If different land type
                   //printf("CHANGING MODE!\n");
@@ -806,7 +806,7 @@ void indexing_interests() //Making an index for the target and the origin
 
 int estimate_cost(struct pair *coords, int i) //Estimate the cost of each steps assuming that the starting point is always land
 {
-  if(map[coords[i].row][coords[i].col] == 'O' || map[coords[i].row][coords[i].col] == 'T')
+  if(map[coords[i].row][coords[i].col] == 'O' || map[coords[i].row][coords[i].col] == 'T' || map[coords[i].row][coords[i].col] == 'X')
   {
     if(map[coords[i-1].row][coords[i-1].col] == '~' || map[coords[i-1].row][coords[i-1].col] == 't')
       return 40;
@@ -816,7 +816,7 @@ int estimate_cost(struct pair *coords, int i) //Estimate the cost of each steps 
 
   else if(map[coords[i].row][coords[i].col] == '~' || map[coords[i].row][coords[i].col] == 't')
   {
-    if(map[coords[i-1].row][coords[i-1].col] == 'O' || map[coords[i-1].row][coords[i-1].col] == 'T')
+    if(map[coords[i-1].row][coords[i-1].col] == 'O' || map[coords[i-1].row][coords[i-1].col] == 'T' || map[coords[i].row][coords[i].col] == 'X')
       return 40;
     else
       return 10;
@@ -824,9 +824,6 @@ int estimate_cost(struct pair *coords, int i) //Estimate the cost of each steps 
 
   else if (map[coords[i].row][coords[i].col] == '*')
     return 80;
-
-  else if (map[coords[i].row][coords[i].col] == 'X')
-    return 10;
 
   else
   {
@@ -855,7 +852,7 @@ void compare_cost()
   else
   {
     //If the run is sucessful, calculate the energy cost. If failed, make the energy infinite.
-    /*if(p1)
+    if(p1)
       energy1 = calculate_total_cost(cnt_pth1, coord1);
     else
       energy1 = INT_MAX;
@@ -868,7 +865,7 @@ void compare_cost()
     if(p3)
       energy3 = calculate_total_cost(cnt_pth3, coord3);
     else
-      energy3 = INT_MAX; */
+      energy3 = INT_MAX;
 
     if(p4)
       energy4 = calculate_total_cost(cnt_pth4, coord4);
@@ -876,14 +873,14 @@ void compare_cost()
       energy4 = INT_MAX;
 
 
-    printf("_________________________________________________________________________\n");
-    printf("\nEnergy of path - %d \n", energy4);
+    printf("\n_________________________________________________________________________\n", energy1, energy2, energy3, energy4);
+    printf("\nEnergy of each path respectively: 1 - %d | 2 - %d | 3 - %d | 4 - %d \n", energy1, energy2, energy3, energy4);
 
     int a, b, final;
     int x, y;
 
     // compare the energy level of each paths
-  /*  if(energy1 <= energy2)
+    if(energy1 <= energy2)
     {
       a = 1;
       x = energy1;
@@ -905,16 +902,15 @@ void compare_cost()
       b = 4;
       y = energy4;
     }
-    */
 
     // Pick the most efficient one
-    final = 4; //(x <= y) ? a : b;
+    final = (x <= y) ? a : b;
 
-    /*printf("\nPath number %d won with the lowest energy!\n", final);*/
-    printf("\n_________________________________________________________________________\n");
+    printf("\nPath number %d won with the lowest energy!\n", final);
+    printf("\n_________________________________________________________________________\n", energy1, energy2, energy3, energy4);
     switch(final) //Copy the most efficient path into the final variable to use
     {
-      /*case 1:
+      case 1:
         cnt_path = cnt_pth1;
         memcpy(path_f, path_1, sizeof(path_1));
         memcpy(coord_f, coord1, sizeof(coord1));
@@ -928,7 +924,7 @@ void compare_cost()
         cnt_path = cnt_pth3;
         memcpy(path_f, path_3, sizeof(path_3));
         memcpy(coord_f, coord3, sizeof(coord3));
-        break;*/
+        break;
       case 4:
         cnt_path = cnt_pth4;
         memcpy(path_f, path_4, sizeof(path_4));
@@ -961,7 +957,7 @@ int move(char *world, int map_id)
     p4 = false;
     indEx = 0;
     drive_mode = land;
-    path_mode = 4;
+    path_mode = 1;
     current_id = map_id;
   }
 
@@ -983,17 +979,17 @@ int move(char *world, int map_id)
   {
     printf("Initiallizing the path\n");
     // Resetting all of the path flags
-    /*p1 = false;
+    p1 = false;
     p2 = false;
-    p3 = false;*/
+    p3 = false;
     p4 = false;
-    //path_mode = 1;
+    path_mode = 1;
 
-    //while(path_mode <= 4) //Cycling through all of the pathing modes
-    //{
+    while(path_mode <= 4) //Cycling through all of the pathing modes
+    {
       a_star(map, origin, target);  //Calculate a path from origin to target
-      //path_mode++;
-    //}
+      path_mode++;
+    }
     compare_cost();
   }
 
@@ -1001,17 +997,17 @@ int move(char *world, int map_id)
   {
     printf("Initiallizing the return path\n");
     // Resetting all of the path flags
-    /*p1 = false;
+    p1 = false;
     p2 = false;
-    p3 = false;*/
+    p3 = false;
     p4 = false;
-    //path_mode = 1;
+    path_mode = 1;
 
-    //while(path_mode <= 4) //Cycling through all of the pathing modes
-    //{
+    while(path_mode <= 4) //Cycling through all of the pathing modes
+    {
       a_star(map, target, origin);  //Calculate a path from target to origin
-      //path_mode++;
-    //}
+      path_mode++;
+    }
     compare_cost();
   }
 
