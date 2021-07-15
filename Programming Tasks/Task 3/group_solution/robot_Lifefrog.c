@@ -1,4 +1,4 @@
-#include "robot_example.h"
+#include "robot_Lifefrog.h"
 // IMPLEMET THIS FUNCTION
 // ALLOWED RETURN VALUES:
 // 1: North, 2: East, 3: South, 4: West, 5: Toggle water/land mode
@@ -32,7 +32,7 @@
 #define FALSE 0
 #define TRUE 1
 
-int mvDir = 0; 						// Final return variable
+int mvDir = 0, mvDirOld; 						// Final return variable
 int initMap = 0;
 
 int Xorigin = Xmax/2; // The starting position of the robot
@@ -47,11 +47,12 @@ int Xcurrent = Xmax/2; //Variable for current position of the robot
 int Ycurrent = Ymax/2;
 
 int Xold, Yold;
+char spot_save;
 
 int Xtarget = Xmax/2, Ytarget = Ymax/2; //Variable for target direction
 
-int driveMode = land;
-int target_located = 0, spot_located = 0, loop_break1 = 0, loop_break2 = 0;
+int driveMode = land, driveModeOld;
+int target_located = 0, spot_located = 0, loop_break1 = 0, loop_break2 = 0, footprint_cleared = 0;
 
 int state = 0;
 int direction = south;
@@ -122,29 +123,45 @@ void robotPosition(char *world)
 
 void FillMap(char *world){
   //Position on the map
-  if(Ycurrent==Yorigin && Xcurrent==Xorigin)
-	  map[Ycurrent][Xcurrent]='X';
 
-	if(mvDir)
-	{
-		if(driveMode == land && mvDir != modeSwitch && map[Ycurrent][Xcurrent]!='X')
-			map[Ycurrent][Xcurrent]='F';
-		else if(driveMode == water && mvDir != modeSwitch && map[Ycurrent][Xcurrent]!='X')
-			map[Ycurrent][Xcurrent]='W';
+	//Marking the trail behind of the Robot
+	if(mvDir)		// The reason why the map is done like this because there are no reference map.
+	{						// So if I want to see the position of R, I have to use the last drive mode to check for water or land
+		if(mvDirOld == modeSwitch && mvDir != modeSwitch && driveModeOld == water)		//The first 2 ifs check to see if the drivemode changed.
+		{																																							//This can cause the map to be shifted if not done
+			map[Yold][Xold] = 'F';																											//If the drivemode has been changed as the last return, mark the trail as 'F' if the lastdrivemode is land
+		}
+
+		else if(mvDirOld == modeSwitch && mvDir != modeSwitch && driveModeOld == land)
+		{
+			map[Yold][Xold] = 'W';																											//If the drivemode has been changed as the last return, mark the trail as 'F' if the lastdrivemode is water
+		}
+		else if(driveMode == land && mvDirOld != modeSwitch && mvDir != modeSwitch)
+		{
+			map[Yold][Xold] = 'F';																											//If drive mode has not been changed, mark the trail as 'F' if the current driveMode is land
+		}
+		else if(driveMode == water && mvDirOld != modeSwitch && mvDir != modeSwitch)	//If the drivemode has not been changed, mark the trail as 'W' if the current driveMode is water
+		{
+			map[Yold][Xold] = 'W';
+		}
 	}
 
-  if(map[Ycurrent-1][Xcurrent]!='F' && map[Ycurrent-1][Xcurrent]!='W'&& map[Ycurrent-1][Xcurrent]!='X'){
+	//Marking the surroundings of the robot if there is no footprint on it already.
+	if(map[Ycurrent-1][Xcurrent]!='F' && map[Ycurrent-1][Xcurrent]!='W'){
 	  map[Ycurrent-1][Xcurrent] = sur[0];
-  }
-  if(map[Ycurrent][Xcurrent+1]!='F' && map[Ycurrent][Xcurrent+1]!='W' && map[Ycurrent-1][Xcurrent]!='X'){
+	}
+	if(map[Ycurrent][Xcurrent+1]!='F' && map[Ycurrent][Xcurrent+1]!='W'){
 	  map[Ycurrent][Xcurrent+1] = sur[1];
-  }
-  if(map[Ycurrent+1][Xcurrent]!='F' && map[Ycurrent+1][Xcurrent]!='W' && map[Ycurrent-1][Xcurrent]!='X'){
+	}
+	if(map[Ycurrent+1][Xcurrent]!='F' && map[Ycurrent+1][Xcurrent]!='W'){
 	  map[Ycurrent+1][Xcurrent] = sur[2];
-  }
-  if(map[Ycurrent][Xcurrent-1]!='F' && map[Ycurrent][Xcurrent-1]!='W' && map[Ycurrent-1][Xcurrent]!='X'){
+	}
+	if(map[Ycurrent][Xcurrent-1]!='F' && map[Ycurrent][Xcurrent-1]!='W'){
 	  map[Ycurrent][Xcurrent-1] = sur[3];
-  }
+	}
+
+	map[Yorigin][Xorigin]='X';	//Make sure the origin is always X, unless R is on top of it
+	map[Ycurrent][Xcurrent]='R';	//Mark the current position as R
 
 
 }
@@ -158,10 +175,17 @@ void targeted_move()
 			for(int i = 0; i<Xmax; i++)
 			{
 				for(int j = 0; j<Ymax; j++)
-					world2[i][j] = map[j][i];		// the orientation is flipped for Christian's code lmao
+				{
+					if(map[j][i]=='W')
+						world2[i][j] = 'F';
+					else
+						world2[i][j] = map[j][i];		// the orientation is flipped for Christian's code lmao
+				}
 			}
 
 			memcpy(waterland, world2, sizeof(world2));
+
+
 			printf("\n");
 			if(!target_located)
 			{
@@ -170,8 +194,8 @@ void targeted_move()
 			}
 			else
 			{
-				tx = xx;
-				ty = xy;
+				tx = Xorigin;
+				ty = Yorigin;
 			}
 			rx = Xcurrent;
 			ry = Ycurrent;
@@ -461,6 +485,8 @@ int move(char *world) {
 
 		PrintMap();
 
+		mvDirOld = mvDir;
+
 		if(!target_located)
 		{
 			// start of the actual movement code
@@ -637,6 +663,24 @@ int move(char *world) {
 
 		else
 		{
+
+			if(!footprint_cleared)
+			{
+				//Clearing the map of footprint
+				for(int i = 0; i<Ymax; i++)
+				{
+					for(int j = 0; j<Xmax; j++)
+					{
+						if(map[i][j]=='F')
+							map[i][j] = 'O';
+						else if(map[i][j]=='W')
+							map[i][j] = '~';
+					}
+				}
+				footprint_cleared = TRUE;
+			}
+
+
 			printf("I'm returning to base!\n");
 			if(map[Ycurrent-1][Xcurrent] == 'X')        //check north
 					{
@@ -662,6 +706,7 @@ int move(char *world) {
 			targeted_move();
 		}
 
+	driveModeOld = driveMode;
   if(map[Ytarget][Xtarget] == '~' && driveMode == land || map[Ytarget][Xtarget] == 'W' && driveMode == land) //If the target location is water and drive mode is land
   {
 		printf("Water detected! Changing mode!\n");

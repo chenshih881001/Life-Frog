@@ -28,7 +28,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "robot_example.h"
+#include "robot_Lifefrog.h"
 
 int driving_mode = 0;
 int rescued = 0;
@@ -235,7 +235,7 @@ int main() {
 
     // Set the world to use
     char world[200];
-    memcpy(world, world7, sizeof(world7));
+    memcpy(world, world5, sizeof(world5));
 
     // Initialize target and robot positions
     // Assumes only one target, one robot
